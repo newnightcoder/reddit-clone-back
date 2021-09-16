@@ -1,6 +1,6 @@
 import cors from "cors";
 import express from "express";
-
+import authRoute from "./routes/authRoute.js";
 const app = express();
 const PORT = 3001;
 
@@ -8,12 +8,18 @@ app.use(express.json());
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 
-app.post("/", (req, res) => {
-  console.log(req.body.userInput);
-  res.status(200).json({
-    message: "backend says hi!",
-  });
-});
+app.use(authRoute);
+
+// app.post("/signup", (req, res) => {
+//   console.log("request front", req.body);
+//   if (!req.body) {
+//     res.status(404).json({ errorMsg: "oops problem sorry!" });
+//     return;
+//   }
+//   res.status(201).json({
+//     message: "backend says hi!",
+//   });
+// });
 
 // app.get("/", (req, res) => {
 //   const testQuery = "USE redditDB";

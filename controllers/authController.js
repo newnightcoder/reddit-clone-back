@@ -12,9 +12,9 @@ export const createUser = (req, res, next) => {
     if (err) {
       console.log(err);
       res.status(500).json({
-        errorMsg: `Oops! petit bug désolé. Veuillez rafraichir la page et recommencer!`,
+        errorMsg: `Oops! petit bug de notre part, désolé. \nVeuillez rafraichir la page et recommencer!`,
       });
-      throw err;
+      return;
     }
 
     const CREATE_USER = `
@@ -25,8 +25,10 @@ export const createUser = (req, res, next) => {
       connection.release();
       if (err) {
         console.log(err);
-        const errorMsg = `Un compte avec cette adresse email existe déjà!\nSi vous êtes déjà membre, cliquez sur "se connecter" en bas de l'écran.`;
+        const errorMsg =
+          'Un compte avec cette adresse email existe déjà!\nSi vous êtes déjà membre, cliquez sur\n"se connecter" en bas de l\'écran.';
         res.status(500).json({
+          errorNumber: err.errno === 1062 && err.errno,
           errorMsg: err.errno === 1062 ? errorMsg : err.message,
         });
         return;
@@ -54,10 +56,9 @@ export const logUser = (req, res, next) => {
     if (err) {
       console.log(err);
       res.status(500).json({
-        errorMsg:
-          "Oops! petit bug désolé. Veuillez rafraichir la page et recommencer!",
+        errorMsg: `Oops! petit bug de notre part, désolé. \nVeuillez rafraichir la page et recommencer!`,
       });
-      throw err;
+      return;
     }
 
     const FIND_USER = `SELECT * FROM tbl_user WHERE email = ${user.email}`;
@@ -127,11 +128,20 @@ export const addUserName = (req, res, next) => {
       connection.release();
       if (err) {
         console.log(err);
-        res.status(500).json({ errorMsg: err.message });
+        const errorMsg =
+          "Ce nom d'utilisateur est déjà pris...\nVeuillez en choisir un autre.";
+        res.status(500).json({
+          errorNumber: err.errno === 1062 && err.errno,
+          errorMsg: err.errno === 1062 ? errorMsg : err.message,
+        });
         return;
       }
       res.status(200).json({ message: "username added successfully!" });
       next();
     });
   });
+};
+
+export const addUserPic = (req, res, next) => {
+  console.log("file sent from front:", req.body.fileName);
 };

@@ -4,9 +4,9 @@ import { upload } from "../middleware/multer.js";
 
 const authRoute = express.Router();
 
-authRoute.post("/", auth.createUser);
+authRoute.post("/signup", auth.createUser);
 authRoute.post("/username", auth.addUserName);
-authRoute.post("/userpic", upload.single("userpic"), auth.addUserPic);
-authRoute.post("/", auth.logUser);
+authRoute.post("/userpic", upload, auth.addUserPic);
+authRoute.post("/login", auth.logUser);
 
 export default authRoute;

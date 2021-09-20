@@ -16,7 +16,6 @@ export const createUser = (req, res, next) => {
       });
       return;
     }
-
     const CREATE_USER = `
     INSERT INTO tbl_user (email, password) 
     VALUES (${user.email}, ${user.password})`;
@@ -60,14 +59,10 @@ export const logUser = (req, res, next) => {
       });
       return;
     }
-
     const FIND_USER = `SELECT * FROM tbl_user WHERE email = ${user.email}`;
-
     connection.query(FIND_USER, (err, result, fields) => {
       connection.release();
-
       console.log("SQL query result:", result);
-
       if (err) {
         console.log(err);
         res.status(404).json({
@@ -107,9 +102,6 @@ export const logUser = (req, res, next) => {
 };
 
 export const addUserName = (req, res, next) => {
-  console.log("new username received!", req.body.userName);
-  console.log("id received!", typeof req.body.userId);
-
   db.getConnection((err, connection) => {
     if (err) {
       console.log(err);
@@ -143,5 +135,5 @@ export const addUserName = (req, res, next) => {
 };
 
 export const addUserPic = (req, res, next) => {
-  console.log("file sent from front:", req.body.fileName);
+  console.log("file sent from front:", req.file);
 };

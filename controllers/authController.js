@@ -136,4 +136,40 @@ export const addUserName = (req, res, next) => {
 
 export const addUserPic = (req, res, next) => {
   console.log("file sent from front:", req.file);
+  console.log("params:", req.body);
+
+  // ❗️❗️❗️ save in SQL DB!!!!
+  db.getConnection((err, connection) => {
+    connection.release();
+    if (err) {
+      console.log(err.message);
+      return;
+    }
+    const ADD_USERPIC = `UPDATE tbl_user
+    SET picUrl = ${JSON.stringify(`http://localhost:3001/${req.file.path}`)}
+    WHERE id = ${req.body.userId}`;
+
+    connection.query(ADD_USERPIC, (err, result, fields) => {
+      if (err) {
+        console.log(err);
+        return;
+      }
+      console.log("result pic q1", result);
+      console.log("fields pic q1", fields);
+    });
+
+    const GET_USERPIC = `SELECT picUrl FROM tbl_user WHERE id = ${req.body.userId}`;
+    connection.query(GET_USERPIC, (err, result, fields) => {
+      if (err) {
+        console.log(err);
+        return;
+      }
+      console.log("image address:", result[0].picUrl);
+      console.log("fields pic q2", fields);
+      res.status(200).json({
+        picUrl: result[0].picUrl,
+      });
+      next();
+    });
+  });
 };

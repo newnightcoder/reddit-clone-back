@@ -1,5 +1,6 @@
 import { db } from "../DB/db.config.js";
 
+// CREATE NEW USER STEP 1
 export const createUser = (req, res, next) => {
   console.log("sent by frontend", req.body);
 
@@ -43,64 +44,7 @@ export const createUser = (req, res, next) => {
   });
 };
 
-export const logUser = (req, res, next) => {
-  console.log("sent by frontend", req.body);
-
-  const user = {
-    email: JSON.stringify(req.body.userEmail),
-    password: JSON.stringify(req.body.userPass),
-  };
-
-  db.getConnection((err, connection) => {
-    if (err) {
-      console.log(err);
-      res.status(500).json({
-        errorMsg: `Oops! petit bug de notre part, désolé. \nVeuillez rafraichir la page et recommencer!`,
-      });
-      return;
-    }
-    const FIND_USER = `SELECT * FROM tbl_user WHERE email = ${user.email}`;
-    connection.query(FIND_USER, (err, result, fields) => {
-      connection.release();
-      console.log("SQL query result:", result);
-      if (err) {
-        console.log(err);
-        res.status(404).json({
-          errorMsg: "Oops petite erreur serveur! Veuillez recommencer!",
-        });
-        return;
-      } else if (result.length === 0) {
-        res
-          .status(404)
-          .json({ errorMsg: "Pas de compte trouvé avec ces identifiants!" });
-        return;
-      }
-      res.status(200).json({ message: "user in the DB! all good!" });
-      next();
-
-      // WITH SWITCH STATEMENT?
-      // switch ((err, result, fields)) {
-      //   case err:
-      //     res.status(404).json({
-      //       errorMsg: "Oops petite erreur serveur! Veuillez recommencer!",
-      //     });
-      //     break;
-      //   case result.length === 0:
-      //     res
-      //       .status(404)
-      //       .json({ errorMsg: "Pas de compte trouvé avec ces identifiants!" });
-      //     break;
-      //   default:
-      //     console.log("SQL query result:", result);
-      //     console.log("SQL query fields:", fields);
-      //     res.status(200).json({ message: "user in the DB! all good!" });
-      //     next();
-      //     break;
-      // }
-    });
-  });
-};
-
+// ADD USERNAME (CREATE USER STEP 2)
 export const addUserName = (req, res, next) => {
   db.getConnection((err, connection) => {
     if (err) {
@@ -134,11 +78,11 @@ export const addUserName = (req, res, next) => {
   });
 };
 
+// ADD USER PIC (CREATE USER STEP 3)
 export const addUserPic = (req, res, next) => {
   console.log("file sent from front:", req.file);
   console.log("params:", req.body);
 
-  // ❗️❗️❗️ save in SQL DB!!!!
   db.getConnection((err, connection) => {
     connection.release();
     if (err) {
@@ -169,6 +113,48 @@ export const addUserPic = (req, res, next) => {
       res.status(200).json({
         picUrl: result[0].picUrl,
       });
+      next();
+    });
+  });
+};
+
+// LOG EXISTING USER
+export const logUser = (req, res, next) => {
+  console.log("sent by frontend", req.body);
+
+  const user = {
+    email: JSON.stringify(req.body.userEmail),
+    password: JSON.stringify(req.body.userPass),
+  };
+
+  db.getConnection((err, connection) => {
+    if (err) {
+      console.log(err);
+      res.status(500).json({
+        errorMsg: `Oops! petit bug de notre part, désolé. \nVeuillez rafraichir la page et recommencer!`,
+      });
+      return;
+    }
+    const FIND_USER = `SELECT * FROM tbl_user WHERE email = ${user.email}`;
+    connection.query(FIND_USER, (err, result, fields) => {
+      connection.release();
+      console.log("SQL query result:", result);
+      if (err) {
+        console.log(err);
+        res.status(404).json({
+          errorMsg: "Oops petite erreur serveur! Veuillez recommencer!",
+        });
+        return;
+      } else if (result.length === 0) {
+        res
+          .status(404)
+          .json({ errorMsg: "Pas de compte trouvé avec ces identifiants!" });
+        return;
+      }
+      console.log("results for id!!!!!:", result[0].id);
+      res
+        .status(200)
+        .json({ message: "user in the DB! all good!", userId: result[0].id });
       next();
     });
   });

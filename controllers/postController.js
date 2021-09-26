@@ -6,6 +6,7 @@ export const createPost = (req, res, next) => {
     title: JSON.stringify(req.body.title),
     text: JSON.stringify(req.body.text),
     userId: req.body.userId,
+    date: JSON.stringify(req.body.date),
   };
 
   db.getConnection((err, connection) => {
@@ -14,7 +15,7 @@ export const createPost = (req, res, next) => {
       return;
     }
 
-    const CREATE_POST = `INSERT INTO tbl_post (title, text, fk_userId_post) VALUES (${post.title}, ${post.text},${post.userId})`;
+    const CREATE_POST = `INSERT INTO tbl_post (title, text, fk_userId_post, date) VALUES (${post.title}, ${post.text},${post.userId},${post.date})`;
 
     connection.query(CREATE_POST, (err, result, fields) => {
       connection.release();
@@ -32,15 +33,15 @@ export const createPost = (req, res, next) => {
   });
 };
 
-// RETRIEVE POST FROM DB (TO DISPLAY IN FEED)
-const getPost = () => {
+// RETRIEVE POSTS FROM DB (TO DISPLAY IN FEED)
+export const getPosts = (req, res, next) => {
   db.getConnection((err, connection) => {
     if (err) {
       console.log(err.message);
       return;
     }
 
-    const GET_POST = ``;
+    const GET_POST = `SELECT tbl_post.title, text, date, fk_userId_post, username FROM tbl_post, tbl_user WHERE tbl_post.fk_userId_post=tbl_user.id`;
 
     connection.query(GET_POST, (err, result, fields) => {
       connection.release();
@@ -54,9 +55,8 @@ const getPost = () => {
       console.log("result:", result);
       console.log("fields:", fields);
       res.status(200).json({
-        title,
-        text,
-        fk_userId_post,
+        message: "query went through",
+        posts: result,
       });
       next();
     });

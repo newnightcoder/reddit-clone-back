@@ -41,7 +41,7 @@ export const getPosts = (req, res, next) => {
       return;
     }
 
-    const GET_POST = `SELECT tbl_post.title, text, date, fk_userId_post, username FROM tbl_post, tbl_user WHERE tbl_post.fk_userId_post=tbl_user.id`;
+    const GET_POST = `SELECT tbl_post.title, postId, text, date, fk_userId_post, username, picUrl FROM tbl_post, tbl_user WHERE tbl_post.fk_userId_post=tbl_user.id`;
 
     connection.query(GET_POST, (err, result, fields) => {
       connection.release();
@@ -54,9 +54,12 @@ export const getPosts = (req, res, next) => {
       }
       console.log("result:", result);
       console.log("fields:", fields);
+      const postsInOrder = result.sort((a, b) => {
+        if (a.postId < b.postId) return 1;
+        else return -1;
+      });
       res.status(200).json({
-        message: "query went through",
-        posts: result,
+        posts: postsInOrder,
       });
       next();
     });

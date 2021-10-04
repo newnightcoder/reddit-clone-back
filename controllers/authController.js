@@ -8,8 +8,8 @@ export const logUser = (req, res, next) => {
   console.log("sent by frontend", req.body);
 
   const user = {
-    email: JSON.stringify(req.body.userEmail),
-    password: JSON.stringify(req.body.userPass),
+    email: JSON.stringify(req.body.email),
+    password: JSON.stringify(req.body.password),
   };
 
   db.getConnection((err, connection) => {
@@ -50,8 +50,8 @@ export const logUser = (req, res, next) => {
 /////////////////////////////
 export const createUser = (req, res, next) => {
   const user = {
-    email: JSON.stringify(req.body.newUserEmail),
-    password: JSON.stringify(req.body.newUserPass),
+    email: JSON.stringify(req.body.email),
+    password: JSON.stringify(req.body.password),
   };
 
   db.getConnection((err, connection) => {
@@ -106,7 +106,7 @@ export const addUserName = (req, res, next) => {
     SET username = ${JSON.stringify(
       req.body.userName
     )}, creationDate = ${JSON.stringify(req.body.date)}
-    WHERE id = ${req.body.userId}
+    WHERE id = ${req.body.id}
     `;
     connection.query(ADD_USERNAME, (err, result, fields) => {
       connection.release();
@@ -120,33 +120,29 @@ export const addUserName = (req, res, next) => {
         });
         return;
       }
+      console.log(result);
+    });
+
+    const GET_USERNAME = `SELECT username, email, creationDate FROM tbl_user WHERE id=${req.body.id} `;
+    connection.query(GET_USERNAME, (err, result, fields) => {
+      connection.release();
+      if (err) {
+        console.log(err);
+        const errorMsg = err.message;
+        res.status(500).json({
+          errorNumber: err.errno === 1062 && err.errno,
+          errorMsg: err.errno === 1062 ? errorMsg : err.message,
+        });
+        return;
+      }
       res.status(200).json({
-        message: "username added successfully!",
-        // userName: result[0].username,
+        successMsg: "username added successfully!",
+        username: result[0].username,
+        creationDate: result[0].creationDate,
+        email: result[0].email,
       });
       next();
     });
-
-    const GET_USERNAME = `SELECT username FROM tbl_user WHERE id=${req.body.userId} `;
-    // connection.query(GET_USERNAME, (err, result, fields) => {
-    //   connection.release();
-    //   if (err) {
-    //     console.log(err);
-    //     const errorMsg = err.message;
-    //     res.status(500).json({
-    //       errorNumber: err.errno === 1062 && err.errno,
-    //       errorMsg: err.errno === 1062 ? errorMsg : err.message,
-    //     });
-    //     return;
-    //   }
-    //   res
-    //     .status(200)
-    //     .json({
-    //       message: "username added successfully!",
-    //       userName: result[0].username,
-    //     });
-    //   next();
-    // });
   });
 };
 

@@ -89,8 +89,31 @@ export const likePost = (req, res, next) => {
       }
       console.log("result!!", result);
       res.status(200).json({
-        message: "ok",
+        message: "liked!",
       });
+      next();
+    });
+  });
+};
+
+export const dislikePost = (req, res, next) => {
+  const { postId, userId } = req.body;
+  db.getConnection((err, connection) => {
+    if (err) {
+      console.log(err);
+      res.status(500).json({ error: "oops petit problème désolé" });
+      return;
+    }
+
+    const DISLIKE_POST = `DELETE FROM tbl_like WHERE fk_postId_like= ${postId} AND fk_userId_like = ${userId}`;
+    connection.query(DISLIKE_POST, (err, result, fields) => {
+      connection.release();
+      if (err) {
+        console.log(err);
+        res.status(500).json({ error: "mince alors" });
+        return;
+      }
+      res.status(200).json({ message: "disliked!" });
       next();
     });
   });

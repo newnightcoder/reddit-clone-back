@@ -25,9 +25,11 @@ export const createPost = (req, res, next) => {
         res.status(500).json({ errorMsg: "oops petit problème DB!" });
         return;
       }
-      console.log("result:", result);
-      console.log("fields:", fields);
-      res.status(201).json({ message: "post créé et sauvé dans la DB!👍🏾" });
+      console.log("result:", result.insertId);
+      res.status(201).json({
+        message: "post créé et sauvé dans la DB!👍🏾",
+        // postId: result.insertId,
+      });
       next();
     });
   });
@@ -60,6 +62,34 @@ export const getPosts = (req, res, next) => {
       });
       res.status(200).json({
         posts: postsInOrder,
+      });
+      next();
+    });
+  });
+};
+
+// LIKE Post
+export const likePost = (req, res, next) => {
+  const { postId, userId } = req.body;
+  console.log(req.body);
+  db.getConnection((err, connection) => {
+    if (err) {
+      console.log(err);
+      res.status(500).json({ error: "oops something went wrong" });
+      return;
+    }
+
+    const LIKE_POST = `INSERT INTO tbl_like (fk_postId_like, fk_userId_like) VALUES (${postId},${userId})`;
+    connection.query(LIKE_POST, (err, result, fields) => {
+      connection.release();
+      if (err) {
+        console.log(err);
+        res.status(500).json({ error: "oops something went wrong" });
+        return;
+      }
+      console.log("result!!", result);
+      res.status(200).json({
+        message: "ok",
       });
       next();
     });

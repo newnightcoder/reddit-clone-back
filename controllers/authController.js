@@ -16,30 +16,29 @@ export const logUser = (req, res, next) => {
     if (err) {
       console.log(err);
       res.status(500).json({
-        errorMsg: `Oops! petit bug de notre part, désolé. \nVeuillez rafraichir la page et recommencer!`,
+        error: `Oops! petit bug de notre part, désolé. \nVeuillez rafraichir la page et recommencer!`,
       });
       return;
     }
     const FIND_USER = `SELECT * FROM tbl_user WHERE email = ${user.email}`;
+
     connection.query(FIND_USER, (err, result, fields) => {
       connection.release();
       console.log("SQL query result:", result);
       if (err) {
         console.log(err);
         res.status(404).json({
-          errorMsg: "Oops petite erreur serveur! Veuillez recommencer!",
+          error: "Oops petite erreur serveur! Veuillez recommencer!",
         });
         return;
       } else if (result.length === 0) {
         res
           .status(404)
-          .json({ errorMsg: "Pas de compte trouvé avec ces identifiants!" });
+          .json({ error: "Pas de compte trouvé avec ces identifiants!" });
         return;
       }
       console.log("result user", result[0]);
-      res
-        .status(200)
-        .json({ message: "user in the DB! all good!", user: result[0] });
+      res.status(200).json({ user: result[0] });
       next();
     });
   });
@@ -58,7 +57,7 @@ export const createUser = (req, res, next) => {
     if (err) {
       console.log(err);
       res.status(500).json({
-        errorMsg: `Oops! petit bug de notre part, désolé. \nVeuillez rafraichir la page et recommencer!`,
+        error: `Oops! petit bug de notre part, désolé. \nVeuillez rafraichir la page et recommencer!`,
       });
       return;
     }
@@ -70,11 +69,11 @@ export const createUser = (req, res, next) => {
       connection.release();
       if (err) {
         console.log(err);
-        const errorMsg =
+        const error =
           'Un compte avec cette adresse email existe déjà!\nSi vous êtes déjà membre, cliquez sur\n"se connecter" en bas de l\'écran.';
         res.status(500).json({
           errorNumber: err.errno === 1062 && err.errno,
-          errorMsg: err.errno === 1062 ? errorMsg : err.message,
+          error: err.errno === 1062 ? error : err.message,
         });
         return;
       }
@@ -96,7 +95,7 @@ export const addUserName = (req, res, next) => {
     if (err) {
       console.log(err);
       res.status(500).json({
-        errorMsg:
+        error:
           "Oops! petit problème de connexion. \n Veuillez rafraichir la page et recommencer.",
       });
       return;
@@ -112,11 +111,11 @@ export const addUserName = (req, res, next) => {
       connection.release();
       if (err) {
         console.log(err);
-        const errorMsg =
+        const error =
           "Ce nom d'utilisateur est déjà pris...\nVeuillez en choisir un autre.";
         res.status(500).json({
           errorNumber: err.errno === 1062 && err.errno,
-          errorMsg: err.errno === 1062 ? errorMsg : err.message,
+          error: err.errno === 1062 ? error : err.message,
         });
         return;
       }
@@ -128,10 +127,10 @@ export const addUserName = (req, res, next) => {
       connection.release();
       if (err) {
         console.log(err);
-        const errorMsg = err.message;
+        const error = err.message;
         res.status(500).json({
           errorNumber: err.errno === 1062 && err.errno,
-          errorMsg: err.errno === 1062 ? errorMsg : err.message,
+          error: err.errno === 1062 ? error : err.message,
         });
         return;
       }

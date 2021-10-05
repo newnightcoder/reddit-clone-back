@@ -38,7 +38,7 @@ export const logUser = (req, res, next) => {
         return;
       }
       console.log("result user", result[0]);
-      res.status(200).json({ user: result[0] });
+      res.status(200).json({ user: result[0], isNewUser: false });
       next();
     });
   });
@@ -139,6 +139,7 @@ export const addUserName = (req, res, next) => {
         username: result[0].username,
         creationDate: result[0].creationDate,
         email: result[0].email,
+        isNewUser: true,
       });
       next();
     });
@@ -153,6 +154,7 @@ export const addUserPic = (req, res, next) => {
   db.getConnection((err, connection) => {
     if (err) {
       console.log(err.message);
+      res.status(500).json({ error: "ooops something went wrong sorry!" });
       return;
     }
     const ADD_USERPIC = `UPDATE tbl_user
@@ -162,9 +164,9 @@ export const addUserPic = (req, res, next) => {
 
     connection.query(ADD_USERPIC, (err, result, fields) => {
       connection.release();
-
       if (err) {
         console.log(err);
+        res.status(500).json({ error: "petit bug désolé" });
         return;
       }
     });
@@ -172,12 +174,11 @@ export const addUserPic = (req, res, next) => {
     const GET_USERPIC = `SELECT picUrl FROM tbl_user WHERE id = ${req.body.userId}`;
     connection.query(GET_USERPIC, (err, result, fields) => {
       connection.release();
-
       if (err) {
         console.log(err);
+        res.status(500).json({ error: "problème avec l'image" });
         return;
       }
-
       res.status(200).json({
         picUrl: result[0].picUrl,
       });

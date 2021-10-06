@@ -1,47 +1,63 @@
 import { db } from "../DB/db.config.js";
+import { User } from "../models/userModel.js";
+
+// export const logUser = (req, res, next) => {
+//   console.log("sent by frontend", req.body);
+
+//   const user = {
+//     email: JSON.stringify(req.body.email),
+//     password: JSON.stringify(req.body.password),
+//   };
+
+//   db.getConnection((err, connection) => {
+//     if (err) {
+//       console.log(err);
+//       res.status(500).json({
+//         error: `Oops! petit bug de notre part, désolé. \nVeuillez rafraichir la page et recommencer!`,
+//       });
+//       return;
+//     }
+//     const FIND_USER = `SELECT * FROM tbl_user WHERE email = ${user.email}`;
+
+//     connection.query(FIND_USER, (err, result, fields) => {
+//       connection.release();
+//       if (err) {
+//         console.log(err);
+//         res.status(404).json({
+//           error: "Oops petite erreur serveur! Veuillez recommencer!",
+//         });
+//         return;
+//       } else if (result.length === 0) {
+//         res
+//           .status(404)
+//           .json({ error: "Pas de compte trouvé avec ces identifiants!" });
+//         return;
+//       }
+//       console.log("result user", result[0]);
+//       res.status(200).json({ user: result[0], isNewUser: false });
+//       next();
+//     });
+//   });
+// };
 
 //////////////////////
 // LOG EXISTING USER
 //////////////////////
 
-export const logUser = (req, res, next) => {
-  console.log("sent by frontend", req.body);
-
-  const user = {
-    email: JSON.stringify(req.body.email),
-    password: JSON.stringify(req.body.password),
-  };
-
-  db.getConnection((err, connection) => {
-    if (err) {
-      console.log(err);
-      res.status(500).json({
-        error: `Oops! petit bug de notre part, désolé. \nVeuillez rafraichir la page et recommencer!`,
-      });
-      return;
+export const logUser = async (req, res, next) => {
+  const { email, password } = req.body;
+  const errorBackend = "Oops! petit problème de notre part désolé";
+  const errorNotFound = "Aucun compte trouvé avec ces identifiants";
+  try {
+    const user = await new User(email, password).login();
+    if (user === undefined) {
+      return res.status(404).json({ error: errorNotFound });
     }
-    const FIND_USER = `SELECT * FROM tbl_user WHERE email = ${user.email}`;
-
-    connection.query(FIND_USER, (err, result, fields) => {
-      connection.release();
-      console.log("SQL query result:", result);
-      if (err) {
-        console.log(err);
-        res.status(404).json({
-          error: "Oops petite erreur serveur! Veuillez recommencer!",
-        });
-        return;
-      } else if (result.length === 0) {
-        res
-          .status(404)
-          .json({ error: "Pas de compte trouvé avec ces identifiants!" });
-        return;
-      }
-      console.log("result user", result[0]);
-      res.status(200).json({ user: result[0], isNewUser: false });
-      next();
-    });
-  });
+    res.status(200).json({ user, isNewUser: false });
+    next();
+  } catch (error) {
+    res.status(500).json({ error: errorBackend });
+  }
 };
 
 ////////////////////////////

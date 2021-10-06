@@ -3,7 +3,6 @@ import express from "express";
 import * as path from "path";
 import authRoute from "./routes/authRoute.js";
 import postRoute from "./routes/postRoute.js";
-
 const app = express();
 const PORT = 3001;
 const __dirname = path.resolve();

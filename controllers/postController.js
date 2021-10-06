@@ -19,10 +19,9 @@ export const createPost = (req, res, next) => {
 
     connection.query(CREATE_POST, (err, result, fields) => {
       connection.release();
-
       if (err) {
         console.log(err.message);
-        res.status(500).json({ errorMsg: "oops petit problème DB!" });
+        res.status(500).json({ errorMsg: "oops petit problème!" });
         return;
       }
       console.log("result:", result.insertId);

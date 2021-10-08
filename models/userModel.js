@@ -52,5 +52,22 @@ export class User {
     }
   }
 
-  async addAvatarImg() {}
+  async addAvatarImg(path) {
+    const sqlAdd_avatarImg = `UPDATE tbl_user
+    SET picUrl = "http://localhost:3001/${path}" WHERE id=${this.id}`;
+    const sqlGet_avatarImg = `SELECT picUrl FROM tbl_user WHERE id = ${this.id}`;
+
+    const connection = await db.getConnection();
+    try {
+      const res = await connection.execute(sqlAdd_avatarImg);
+      if (res) {
+        const [avatarImg, _] = await connection.execute(sqlGet_avatarImg);
+        return avatarImg[0].picUrl;
+      }
+    } catch (error) {
+      throw error;
+    } finally {
+      connection.release();
+    }
+  }
 }

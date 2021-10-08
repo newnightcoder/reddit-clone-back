@@ -1,6 +1,29 @@
 import { db } from "../DB/db.config.js";
 
+/////////////////////////////
+// GET ALL POSTS (FOR FEED)
+/////////////////////////////
+
+export const getPosts = async (req, res, next) => {
+  const GET_POSTS = `SELECT title, postId, text, date, fk_userId_post, username, picUrl FROM tbl_post, tbl_user WHERE tbl_post.fk_userId_post=tbl_user.id`;
+
+  const [posts, _] = await db.execute(GET_POSTS);
+
+  const postsInOrder = posts.sort((a, b) => {
+    if (a.postId < b.postId) return 1;
+    else return -1;
+  });
+  console.log(postsInOrder);
+  res.status(200).json({
+    posts: postsInOrder,
+  });
+  next();
+};
+
+////////////////////
 // SAVE POST IN DB
+////////////////////
+
 export const createPost = (req, res, next) => {
   const post = {
     title: JSON.stringify(req.body.title),
@@ -9,19 +32,20 @@ export const createPost = (req, res, next) => {
     date: JSON.stringify(req.body.date),
   };
 
-  db.getConnection((err, connection) => {
+  pool.getConnection((err, connection) => {
     if (err) {
       console.log(err.message);
       return;
     }
 
     const CREATE_POST = `INSERT INTO tbl_post (title, text, fk_userId_post, date) VALUES (${post.title}, ${post.text},${post.userId},${post.date})`;
+    const GET_POST = `SELECT tbl_post.title, postId, text, date, fk_userId_post, username, picUrl FROM tbl_post, tbl_user WHERE tbl_post.fk_userId_post=tbl_user.id`;
 
     connection.query(CREATE_POST, (err, result, fields) => {
       connection.release();
       if (err) {
         console.log(err.message);
-        res.status(500).json({ errorMsg: "oops petit problème!" });
+        res.status(500).json({ errorMsg: "oops petit problèmepool!" });
         return;
       }
       console.log("result:", result.insertId);
@@ -34,44 +58,14 @@ export const createPost = (req, res, next) => {
   });
 };
 
-// RETRIEVE POSTS FROM DB (TO DISPLAY IN FEED)
-export const getPosts = (req, res, next) => {
-  db.getConnection((err, connection) => {
-    if (err) {
-      console.log(err.message);
-      return;
-    }
+///////////////
+//   LIKE
+///////////////
 
-    const GET_POST = `SELECT tbl_post.title, postId, text, date, fk_userId_post, username, picUrl FROM tbl_post, tbl_user WHERE tbl_post.fk_userId_post=tbl_user.id`;
-
-    connection.query(GET_POST, (err, result, fields) => {
-      connection.release();
-      if (err) {
-        console.log(err.message);
-        res.status(500).json({
-          errorMsg: "oops petit problème de GET niveau DB!",
-        });
-        return;
-      }
-      console.log("result:", result);
-      console.log("fields:", fields);
-      const postsInOrder = result.sort((a, b) => {
-        if (a.postId < b.postId) return 1;
-        else return -1;
-      });
-      res.status(200).json({
-        posts: postsInOrder,
-      });
-      next();
-    });
-  });
-};
-
-// LIKE Post
 export const likePost = (req, res, next) => {
   const { postId, userId } = req.body;
   console.log(req.body);
-  db.getConnection((err, connection) => {
+  pool.getConnection((err, connection) => {
     if (err) {
       console.log(err);
       res.status(500).json({ error: "oops something went wrong" });
@@ -95,9 +89,13 @@ export const likePost = (req, res, next) => {
   });
 };
 
+///////////////
+//   DISLIKE
+///////////////
+
 export const dislikePost = (req, res, next) => {
   const { postId, userId } = req.body;
-  db.getConnection((err, connection) => {
+  pool.getConnection((err, connection) => {
     if (err) {
       console.log(err);
       res.status(500).json({ error: "oops petit problème désolé" });

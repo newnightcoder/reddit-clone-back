@@ -33,7 +33,7 @@ export class Post {
   }
 
   static async getPosts() {
-    const GET_POSTS = `SELECT title, postId, text, date, fk_userId_post, username, picUrl FROM tbl_post, tbl_user WHERE tbl_post.fk_userId_post=tbl_user.id`;
+    const GET_POSTS = `SELECT title, postId, text, date, fk_userId_post, username, picUrl, likesCount FROM tbl_post, tbl_user WHERE tbl_post.fk_userId_post=tbl_user.id`;
     try {
       const [posts, _] = await db.execute(GET_POSTS);
       const postsInOrder = posts.sort((a, b) => {

@@ -1,5 +1,5 @@
+import { db } from "../db/db.config.js";
 import { Post } from "../models/postModel.js";
-
 /////////////////////////////
 // GET ALL POSTS (FOR FEED)
 /////////////////////////////
@@ -7,8 +7,10 @@ import { Post } from "../models/postModel.js";
 export const getPosts = async (req, res, next) => {
   try {
     const posts = await Post.getPosts();
+    const likes = await Post.getLikes();
     res.status(200).json({
       posts,
+      likes,
     });
     next();
   } catch (error) {
@@ -37,56 +39,34 @@ export const createPost = async (req, res, next) => {
 //   LIKE
 ///////////////
 
-export const likePost = (req, res, next) => {
-  const { postId, userId } = req.body;
-  console.log(req.body);
-  pool.getConnection((err, connection) => {
-    if (err) {
-      console.log(err);
-      res.status(500).json({ error: "oops something went wrong" });
-      return;
-    }
+export const likePost = async (req, res, next) => {
+  const { userId, postId, like } = req.body;
+  console.log("req.body", req.body);
 
-    const LIKE_POST = `INSERT INTO tbl_like (fk_postId_like, fk_userId_like) VALUES (${postId},${userId})`;
-    connection.query(LIKE_POST, (err, result, fields) => {
-      connection.release();
-      if (err) {
-        console.log(err);
-        res.status(500).json({ error: "oops something went wrong" });
-        return;
+  switch (like) {
+    case false:
+      const LIKE_POST = `INSERT INTO tbl_like (fk_postId_like, fk_userId_like) VALUES ((SELECT postId FROM tbl_post WHERE postId=${postId}), (SELECT id FROM tbl_user WHERE id=${userId}))`;
+      try {
+        const result = await db.query(LIKE_POST);
+        console.log("result!!", result);
+        res.status(200).json({ liked: true });
+      } catch (error) {
+        res.status(500).json({ error: "Oops petit problème de réseau..." });
+        console.log(error);
       }
-      console.log("result!!", result);
-      res.status(200).json({
-        message: "liked!",
-      });
-      next();
-    });
-  });
-};
-
-///////////////
-//   DISLIKE
-///////////////
-
-export const dislikePost = (req, res, next) => {
-  const { postId, userId } = req.body;
-  pool.getConnection((err, connection) => {
-    if (err) {
-      console.log(err);
-      res.status(500).json({ error: "oops petit problème désolé" });
-      return;
-    }
-
-    const DISLIKE_POST = `DELETE FROM tbl_like WHERE fk_postId_like= ${postId} AND fk_userId_like = ${userId}`;
-    connection.query(DISLIKE_POST, (err, result, fields) => {
-      connection.release();
-      if (err) {
-        console.log(err);
-        res.status(500).json({ error: "mince alors" });
-        return;
+      break;
+    case true:
+      const DISLIKE_POST = `DELETE FROM tbl_like WHERE fk_postId_like= ${postId} AND fk_userId_like = ${userId}`;
+      try {
+        const result = await db.query(DISLIKE_POST);
+        console.log("result dislike!!", result);
+        res.status(200).json({ liked: false });
+      } catch (error) {
+        res.status(500).json({ error: "Oops petit problème de réseau..." });
+        console.log(error);
       }
-      res.status(200).json({ message: "disliked!" });
-      next();
-    });
-  });
+      break;
+    default:
+      return;
+  }
 };

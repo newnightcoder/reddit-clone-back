@@ -22,11 +22,20 @@ export class Post {
     }
   }
 
+  static async getLikes() {
+    const GET_LIKES = "SELECT * FROM tbl_like";
+    try {
+      const [likes, _] = await db.execute(GET_LIKES);
+      return likes;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   static async getPosts() {
     const GET_POSTS = `SELECT title, postId, text, date, fk_userId_post, username, picUrl FROM tbl_post, tbl_user WHERE tbl_post.fk_userId_post=tbl_user.id`;
     try {
       const [posts, _] = await db.execute(GET_POSTS);
-
       const postsInOrder = posts.sort((a, b) => {
         if (a.postId < b.postId) return 1;
         else return -1;

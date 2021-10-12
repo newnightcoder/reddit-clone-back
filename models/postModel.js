@@ -12,7 +12,6 @@ export class Post {
 
   async create() {
     const sqlCreatePost = `INSERT INTO tbl_post (fk_userId_post,title, text, date) VALUES (${this.userId},"${this.title}", "${this.text}","${this.date}")`;
-
     try {
       const [res, _] = await db.execute(sqlCreatePost);
       const { insertId } = res;

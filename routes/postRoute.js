@@ -6,5 +6,7 @@ const postRouter = express.Router();
 postRouter.post("/", postController.createPost);
 postRouter.get("/", postController.getPosts);
 postRouter.post("/like", postController.likePost);
+postRouter.post("/comment", postController.createComment);
+postRouter.get("/comment", postController.getComments);
 
 export default postRouter;

@@ -1,8 +1,9 @@
 import { db } from "../db/db.config.js";
 import { Post } from "../models/postModel.js";
-/////////////////////////////
-// GET ALL POSTS (FOR FEED)
-/////////////////////////////
+
+///////////////////
+// GET ALL POSTS
+///////////////////
 
 export const getPosts = async (req, res, next) => {
   try {
@@ -18,9 +19,9 @@ export const getPosts = async (req, res, next) => {
   }
 };
 
-////////////////////
-// CREATE POST IN DB
-////////////////////
+///////////////////
+//  CREATE POST
+///////////////////
 
 export const createPost = async (req, res, next) => {
   const { userId, title, text, date } = req.body;
@@ -35,9 +36,9 @@ export const createPost = async (req, res, next) => {
   }
 };
 
-///////////////
-//   LIKE
-///////////////
+////////////////////
+//  LIKE / UNLIKE
+////////////////////
 
 export const likePost = async (req, res, next) => {
   const { userId, postId, like } = req.body;
@@ -45,33 +46,73 @@ export const likePost = async (req, res, next) => {
   const sql_DislikePost = `DELETE FROM tbl_like WHERE fk_postId_like= ${postId} AND fk_userId_like = ${userId}`;
   const sql_IncreaseLikesCount = `UPDATE tbl_post  SET likesCount = likesCount+1 WHERE postId=${postId}`;
   const sql_DecreseLikesCount = `UPDATE tbl_post  SET likesCount = likesCount-1 WHERE postId=${postId}`;
-
+  const sql_getUpdatedCount = `SELECT likesCount FROM tbl_post WHERE postId=${postId}`;
   switch (like) {
     case false:
       try {
         await db.query(sql_LikePost);
-        await db.query(sql_IncreaseLikesCount);
-        // console.log("result!!", result);
-        res.status(200).json({ liked: true });
-        next();
-      } catch (error) {
+        const result = await db.query(sql_IncreaseLikesCount);
+        if (result) {
+          const [updatedCount, _] = await db.query(sql_getUpdatedCount);
+          console.log(updatedCount[0].likesCount);
+          res
+            .status(200)
+            .json({ liked: true, count: updatedCount[0].likesCount });
+        }
+      } catch (err) {
+        console.log(err);
         res.status(500).json({ error: "Oops petit problème de réseau..." });
-        console.log(error);
       }
       break;
     case true:
       try {
         await db.query(sql_DislikePost);
-        await db.query(sql_DecreseLikesCount);
-        // console.log("result dislike!!", result);
-        res.status(200).json({ liked: false });
-        next();
-      } catch (error) {
+        const result = await db.query(sql_DecreseLikesCount);
+        if (result) {
+          const [updatedCount, _] = await db.query(sql_getUpdatedCount);
+          res
+            .status(200)
+            .json({ liked: false, count: updatedCount[0].likesCount });
+        }
+      } catch (err) {
+        console.log(err);
         res.status(500).json({ error: "Oops petit problème de réseau..." });
-        console.log(error);
       }
       break;
     default:
       return;
+  }
+};
+
+export const createComment = async (req, res) => {
+  const { userId, postId, text, date } = req.body;
+  const sql_createComment = `INSERT INTO tbl_comments (fk_userId_comment, fk_postId_comment, text, date) VALUES (${userId},${postId},"${text}","${date}")`;
+  const sql_increaseCommentCount = `UPDATE tbl_post SET commentCount = commentCount+1 WHERE postId=${postId}`;
+  const sql_getCommentCount = `SELECT commentCount FROM tbl_post WHERE postId = ${postId} `;
+  try {
+    const result = await db.execute(sql_createComment);
+    console.log(result);
+    const updatedCount = await db.execute(sql_increaseCommentCount);
+    if (updatedCount) {
+      const [count, _] = await db.execute(sql_getCommentCount);
+      console.log(count[0].commentCount);
+      res.status(201).json({ count: count[0].commentCount });
+    }
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getComments = async (req, res, next) => {
+  const sql_getComments =
+    // `SELECT * FROM tbl_comments`;
+    `SELECT commentId, fk_postId_comment, fk_UserId_comment, text, date, username, picUrl FROM tbl_comments, tbl_user WHERE tbl_comments.fk_userId_comment=tbl_user.id`;
+
+  try {
+    const [comments, _] = await db.execute(sql_getComments);
+    console.log("comments", comments);
+    res.status(200).json({ comments });
+  } catch (err) {
+    throw err;
   }
 };

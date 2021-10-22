@@ -84,6 +84,10 @@ export const likePost = async (req, res, next) => {
   }
 };
 
+////////////////////
+//  COMMENT
+////////////////////
+
 export const createComment = async (req, res) => {
   const { userId, postId, text, date } = req.body;
   const sql_createComment = `INSERT INTO tbl_comments (fk_userId_comment, fk_postId_comment, text, date) VALUES (${userId},${postId},"${text}","${date}")`;
@@ -110,7 +114,6 @@ export const getComments = async (req, res, next) => {
 
   try {
     const [comments, _] = await db.execute(sql_getComments);
-    console.log("comments", comments);
     res.status(200).json({ comments });
   } catch (err) {
     throw err;

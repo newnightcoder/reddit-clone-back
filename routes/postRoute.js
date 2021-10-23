@@ -8,5 +8,7 @@ postRouter.get("/", postController.getPosts);
 postRouter.post("/like", postController.likePost);
 postRouter.post("/comment", postController.createComment);
 postRouter.get("/comment", postController.getComments);
+postRouter.post("/reply", postController.createReply);
+postRouter.get("/reply", postController.getReplies);
 
 export default postRouter;

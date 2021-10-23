@@ -94,8 +94,8 @@ export const createComment = async (req, res) => {
   const sql_increaseCommentCount = `UPDATE tbl_post SET commentCount = commentCount+1 WHERE postId=${postId}`;
   const sql_getCommentCount = `SELECT commentCount FROM tbl_post WHERE postId = ${postId} `;
   try {
-    const result = await db.execute(sql_createComment);
-    console.log(result);
+    await db.execute(sql_createComment);
+
     const updatedCount = await db.execute(sql_increaseCommentCount);
     if (updatedCount) {
       const [count, _] = await db.execute(sql_getCommentCount);
@@ -108,14 +108,39 @@ export const createComment = async (req, res) => {
 };
 
 export const getComments = async (req, res, next) => {
-  const sql_getComments =
-    // `SELECT * FROM tbl_comments`;
-    `SELECT commentId, fk_postId_comment, fk_UserId_comment, text, date, username, picUrl FROM tbl_comments, tbl_user WHERE tbl_comments.fk_userId_comment=tbl_user.id`;
-
+  const sql_getComments = `SELECT commentId, fk_postId_comment, fk_UserId_comment, text, date, username, picUrl FROM tbl_comments, tbl_user WHERE tbl_comments.fk_userId_comment=tbl_user.id`;
   try {
     const [comments, _] = await db.execute(sql_getComments);
     res.status(200).json({ comments });
   } catch (err) {
     throw err;
+  }
+};
+
+////////////////////
+//  REPLY TO COMMENT
+////////////////////
+
+export const createReply = async (req, res, next) => {
+  const { commentId, userId, text, date } = req.body;
+  const sql_createReply = `INSERT INTO tbl_replies (fk_commentId, fk_userId, text, date) VALUES (${commentId},${userId},"${text}","${date}")`;
+
+  try {
+    const result = await db.execute(sql_createReply);
+    console.log(result);
+    res.status(201);
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getReplies = async (req, res, next) => {
+  const sql_getReplies = `SELECT replyId, fk_commentId, fk_UserId, text, date, username, picUrl FROM tbl_replies, tbl_user WHERE tbl_replies.fk_userId=tbl_user.id`;
+  try {
+    const [replies, _] = await db.execute(sql_getReplies);
+    console.log(replies);
+    res.status(200).json({ replies });
+  } catch (error) {
+    throw error;
   }
 };

@@ -30,6 +30,15 @@ export class User {
       throw error;
     }
   }
+  async delete() {
+    const sql_deleteUser = `DELETE FROM tbl_user WHERE id=${this.id}`;
+    try {
+      const [user, _] = await db.execute(sql_deleteUser);
+      return user.insertId;
+    } catch (error) {
+      throw error;
+    }
+  }
 
   async addUsername() {
     const sql_addUserName = `

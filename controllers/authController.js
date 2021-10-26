@@ -80,3 +80,19 @@ export const addUserPic = async (req, res, next) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+/////////////////////////////////////
+// DELETE USER
+/////////////////////////////////////
+
+export const deleteUser = async (req, res, next) => {
+  const { id } = req.body;
+  const user = new User(id, null, null, null, null, null);
+  try {
+    const deleted = await user.delete();
+    console.log("deleted result", deleted);
+    res.status(200);
+  } catch (error) {
+    throw error;
+  }
+};

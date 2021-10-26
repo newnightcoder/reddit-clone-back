@@ -36,6 +36,26 @@ export const createPost = async (req, res, next) => {
   }
 };
 
+///////////////////
+//  DELETE POST
+///////////////////
+
+export const deletePost = async (req, res, next) => {
+  const { postId } = req.body;
+  const sql_deletePost = `DELETE FROM tbl_post WHERE postId=${postId}`;
+  try {
+    const result = await db.execute(sql_deletePost);
+    if (result) {
+      console.log("result delete", result);
+      res
+        .status(200)
+        .json({ error: "oops petit problème lors de la suppression du post" });
+    }
+  } catch (error) {
+    throw error;
+  }
+};
+
 ////////////////////
 //  LIKE / UNLIKE
 ////////////////////

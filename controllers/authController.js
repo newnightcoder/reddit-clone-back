@@ -1,3 +1,4 @@
+import { createToken } from "../middleware/jwt.js";
 import { User } from "../models/userModel.js";
 
 //////////////////////
@@ -13,7 +14,8 @@ export const logUser = async (req, res, next) => {
     if (user === undefined) {
       return res.status(404).json({ error: errorNotFound });
     }
-    res.status(200).json({ user, isNewUser: false });
+    const accessToken = createToken(user);
+    res.status(200).json({ user, isNewUser: false, accessToken });
     next();
   } catch (error) {
     res.status(500).json({ error: errorBackend });

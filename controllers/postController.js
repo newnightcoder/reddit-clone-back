@@ -18,6 +18,20 @@ export const getPosts = async (req, res, next) => {
     console.log(error);
   }
 };
+export const getUserPosts = async (req, res, next) => {
+  const { userId } = req.body;
+  try {
+    const posts = await Post.getUserPosts(userId);
+    const likes = await Post.getLikes();
+    res.status(200).json({
+      posts,
+      likes,
+    });
+    next();
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 ///////////////////
 //  CREATE POST

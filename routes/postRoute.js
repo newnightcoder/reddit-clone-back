@@ -6,6 +6,7 @@ const postRouter = express.Router();
 
 postRouter.post("/", authorizeToken, postController.createPost);
 postRouter.get("/", authorizeToken, postController.getPosts);
+postRouter.post("/user", authorizeToken, postController.getUserPosts);
 postRouter.post("/like", authorizeToken, postController.likePost);
 postRouter.post("/comment", authorizeToken, postController.createComment);
 postRouter.get("/comment", authorizeToken, postController.getComments);

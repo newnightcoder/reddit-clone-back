@@ -91,7 +91,7 @@ export const addUserPic = async (req, res, next) => {
 
 export const getUserProfile = async (req, res, next) => {
   const id = req.body.id;
-  const sql_getUserProfile = `SELECT username, picUrl, creationDate FROM tbl_user WHERE id=?`;
+  const sql_getUserProfile = `SELECT id, username, picUrl, creationDate FROM tbl_user WHERE id=?`;
   try {
     const [user, _] = await db.execute(sql_getUserProfile, [id]);
     if (user) {

@@ -51,6 +51,24 @@ export const createPost = async (req, res, next) => {
 };
 
 ///////////////////
+//  EDIT POST
+///////////////////
+
+export const editPost = async (req, res, next) => {
+  const { postId, userId, title, text } = req.body;
+  const sqlEditPost = `UPDATE tbl_post SET title = "${title}", text = "${text}" WHERE postId="${postId}"`;
+  const errorDB = "Oops désolé, petit problème de post...";
+  try {
+    const [res, _] = await db.execute(sqlEditPost);
+    // const { insertId } = res;
+    // return insertId;
+    console.log("edit result", res);
+  } catch (error) {
+    throw error;
+  }
+};
+
+///////////////////
 //  DELETE POST
 ///////////////////
 

@@ -5,6 +5,7 @@ import { authorizeToken } from "../middleware/jwt.js";
 const postRouter = express.Router();
 
 postRouter.post("/", authorizeToken, postController.createPost);
+postRouter.post("/edit", authorizeToken, postController.editPost);
 postRouter.get("/", authorizeToken, postController.getPosts);
 postRouter.post("/user", authorizeToken, postController.getUserPosts);
 postRouter.post("/like", authorizeToken, postController.likePost);

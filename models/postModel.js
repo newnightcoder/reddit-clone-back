@@ -46,16 +46,6 @@ export class Post {
       throw error;
     }
   }
-  // static async getUserLikes(userId) {
-
-  //   const GET_LIKES = "SELECT * FROM tbl_like WHERE ";
-  //   try {
-  //     const [likes, _] = await db.execute(GET_LIKES);
-  //     return likes;
-  //   } catch (error) {
-  //     throw error;
-  //   }
-  // }
 
   async create() {
     const sqlCreatePost = `INSERT INTO tbl_post (fk_userId_post,title, text, date) VALUES (${this.userId},"${this.title}", "${this.text}","${this.date}")`;

@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 // JWT creation
 export const createToken = (id) => {
   return jwt.sign({ id }, process.env.ACCESS_TOKEN_SECRET, {
-    expiresIn: 180,
+    expiresIn: 60 * 10,
   });
 };
 
@@ -12,7 +12,7 @@ export const createToken = (id) => {
 export const authorizeToken = (req, res, next) => {
   try {
     const authHeaders = req.headers.authorization;
-    const token = authHeaders && authHeaders.split(" ")[1];
+    const token = authHeaders?.split(" ")[1];
 
     if (!token) {
       return res
@@ -23,11 +23,10 @@ export const authorizeToken = (req, res, next) => {
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
       if (err) {
         if (err.name === "TokenExpiredError") {
-          return res
-            .status(403)
-            .json({
-              message: "Votre session a expiré! \n Veuillez vous reconnecter.",
-            });
+          return res.status(403).json({
+            message: "Votre session a expiré! \n Veuillez vous reconnecter.",
+            sessionExpired: true,
+          });
         } else return res.status(403).json({ message: "nope sorry!" });
       }
       req.user = user;

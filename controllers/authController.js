@@ -55,7 +55,8 @@ export const addUserName = async (req, res, next) => {
   const user = new User(id, null, null, username, null, creationDate);
   try {
     const result = await user.addUsername();
-    res.status(200).json({ result, isNewUser: true });
+    const accessToken = createToken(id);
+    res.status(200).json({ result, accessToken, isNewUser: true });
   } catch (error) {
     const { errno } = error;
     res.status(500).json({

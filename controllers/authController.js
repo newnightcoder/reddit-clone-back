@@ -1,3 +1,4 @@
+import { db } from "../db/db.config.js";
 import { createToken } from "../middleware/jwt.js";
 import { User } from "../models/userModel.js";
 
@@ -81,6 +82,25 @@ export const addUserPic = async (req, res, next) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: error.message });
+  }
+};
+
+/////////////////////////////////////
+// GET SOME USER PROFILE
+/////////////////////////////////////
+
+export const getUserProfile = async (req, res, next) => {
+  const id = req.body.id;
+  const sql_getUserProfile = `SELECT username, picUrl, creationDate FROM tbl_user WHERE id=?`;
+  try {
+    const [user, _] = await db.execute(sql_getUserProfile, [id]);
+    if (user) {
+      console.log("user profile", user[0]);
+      res.status(200).json({ user: user[0] });
+      next();
+    }
+  } catch (error) {
+    throw error;
   }
 };
 

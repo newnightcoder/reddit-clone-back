@@ -9,5 +9,6 @@ authRoute.post("/username", auth.addUserName);
 authRoute.post("/userpic", upload, auth.addUserPic);
 authRoute.post("/login", auth.logUser);
 authRoute.post("/delete", auth.deleteUser);
+authRoute.post("/", auth.getUserProfile);
 
 export default authRoute;

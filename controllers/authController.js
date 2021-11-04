@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt";
 import { db } from "../db/db.config.js";
 import { createToken } from "../middleware/jwt.js";
 import { User } from "../models/userModel.js";
@@ -10,14 +11,17 @@ export const logUser = async (req, res, next) => {
   const { email, password } = req.body;
   const errorBackend = "Oops! petit problème de notre part désolé";
   const errorNotFound = "Aucun compte trouvé avec ces identifiants";
+  const errorPassword = "Votre mot de passe est incorrect";
   try {
-    const user = await new User(null, email, password).login();
+    const user = await new User(null, email).login();
     if (user === undefined) {
       return res.status(404).json({ error: errorNotFound });
     }
-    const accessToken = createToken(user);
-    res.status(200).json({ user, isNewUser: false, accessToken });
-    next();
+    if (bcrypt.compare(password, user.password)) {
+      const accessToken = createToken(user);
+      res.status(200).json({ user, isNewUser: false, accessToken });
+      next();
+    } else res.status(200).json({ error: errorPassword });
   } catch (error) {
     res.status(500).json({ error: errorBackend });
   }
@@ -29,9 +33,11 @@ export const logUser = async (req, res, next) => {
 
 export const createUser = async (req, res, next) => {
   const { email, password } = req.body;
+  const salt = 10;
+  const hash = bcrypt.hashSync(password, salt);
   const errorBackend = "Oops! petit problème de notre part désolé";
   const errorDuplicate = "Un compte associé à cet email existe déjà.";
-  const user = new User(null, email, password);
+  const user = new User(null, email, hash);
   try {
     const userId = await user.create();
     res.status(201).json({ userId });
@@ -82,6 +88,25 @@ export const addUserPic = async (req, res, next) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: error.message });
+  }
+};
+
+/////////////////
+// EDIT USERNAME
+//////////////////
+
+export const editUsername = async (req, res, next) => {
+  const { userId, username } = req.body;
+  console.log(userId, username);
+  const sql_EditUsername = `UPDATE tbl_user SET username="${username}" WHERE id=${userId}`;
+  try {
+    const result = await db.execute(sql_EditUsername);
+    if (result) {
+      console.log(result);
+      res.status(200).json({ newName: username });
+    }
+  } catch (error) {
+    throw error;
   }
 };
 

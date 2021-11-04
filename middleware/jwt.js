@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 // JWT creation
 export const createToken = (id) => {
   return jwt.sign({ id }, process.env.ACCESS_TOKEN_SECRET, {
-    expiresIn: 60 * 10,
+    expiresIn: "1h",
   });
 };
 
@@ -30,6 +30,7 @@ export const authorizeToken = (req, res, next) => {
         } else return res.status(403).json({ message: "nope sorry!" });
       }
       req.user = user;
+      // res.status(200).json({ isAuthenticated: true });
       next();
     });
   } catch (error) {

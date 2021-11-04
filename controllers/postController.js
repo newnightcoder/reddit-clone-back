@@ -18,6 +18,11 @@ export const getPosts = async (req, res, next) => {
     console.log(error);
   }
 };
+
+/////////////////////////////
+// GET ALL POSTS FROM A USER
+/////////////////////////////
+
 export const getUserPosts = async (req, res, next) => {
   const { userId } = req.body;
   try {
@@ -55,16 +60,25 @@ export const createPost = async (req, res, next) => {
 ///////////////////
 
 export const editPost = async (req, res, next) => {
-  const { postId, userId, title, text } = req.body;
-  const sqlEditPost = `UPDATE tbl_post SET title = "${title}", text = "${text}" WHERE postId="${postId}"`;
+  const { origin, id, title, text } = req.body;
+  console.log(origin, id, title, text);
+  const sqlEditPost = `UPDATE tbl_post SET title = "${title}", text = "${text}" WHERE postId=${id}`;
+  const sqlEditComment = `UPDATE tbl_comments SET text = "${text}" WHERE commentId=${id}`;
+  const sqlEditReply = `UPDATE tbl_replies SET text = "${text}" WHERE replyId=${id}`;
   const errorDB = "Oops désolé, petit problème de post...";
   try {
-    const [res, _] = await db.execute(sqlEditPost);
-    // const { insertId } = res;
-    // return insertId;
+    const [res, _] = await db.execute(
+      origin === "post"
+        ? sqlEditPost
+        : origin === "comment"
+        ? sqlEditComment
+        : origin === "reply"
+        ? sqlEditReply
+        : null
+    );
     console.log("edit result", res);
   } catch (error) {
-    throw error;
+    res.status(500).json({ error: errorDB });
   }
 };
 
@@ -73,13 +87,26 @@ export const editPost = async (req, res, next) => {
 ///////////////////
 
 export const deletePost = async (req, res, next) => {
-  const { postId } = req.body;
-  const sql_deletePost = `DELETE FROM tbl_post WHERE postId=${postId}`;
+  const { id, postId, origin } = req.body;
+  console.log(id, postId, origin);
+  const sql_deletePost = `DELETE FROM tbl_post WHERE postId=${id}`;
+  const sql_deleteComment = `DELETE FROM tbl_comments WHERE commentId=${id}`;
+  const sql_decreaseCommentCount = `UPDATE tbl_post SET commentCount= commentCount-1 WHERE postId=${postId}`;
+  const sql_deleteReply = `DELETE FROM tbl_replies WHERE replyId=${id}`;
   try {
-    const result = await db.execute(sql_deletePost);
+    if (origin === "comment") {
+      await db.execute(sql_decreaseCommentCount);
+    }
+    const result = await db.execute(
+      origin === "post"
+        ? sql_deletePost
+        : origin === "comment"
+        ? sql_deleteComment
+        : origin === "reply" && sql_deleteReply
+    );
     if (result) {
       console.log("result delete", result);
-      res
+      return res
         .status(200)
         .json({ error: "oops petit problème lors de la suppression du post" });
     }
@@ -93,23 +120,41 @@ export const deletePost = async (req, res, next) => {
 ////////////////////
 
 export const likePost = async (req, res, next) => {
-  const { userId, postId, like } = req.body;
-  const sql_LikePost = `INSERT INTO tbl_like (fk_postId_like, fk_userId_like) VALUES ((SELECT postId FROM tbl_post WHERE postId=${postId}), (SELECT id FROM tbl_user WHERE id=${userId}))`;
-  const sql_DislikePost = `DELETE FROM tbl_like WHERE fk_postId_like= ${postId} AND fk_userId_like = ${userId}`;
-  const sql_IncreaseLikesCount = `UPDATE tbl_post  SET likesCount = likesCount+1 WHERE postId=${postId}`;
-  const sql_DecreseLikesCount = `UPDATE tbl_post  SET likesCount = likesCount-1 WHERE postId=${postId}`;
-  const sql_getUpdatedCount = `SELECT likesCount FROM tbl_post WHERE postId=${postId}`;
+  const { origin, userId, id, like } = req.body;
+  const sql_LikePost = `INSERT INTO tbl_like (fk_postId_like, fk_userId_like) 
+  VALUES ((SELECT postId FROM tbl_post WHERE postId=${id}), 
+  (SELECT id FROM tbl_user WHERE id=${userId}))`;
+  const sql_LikeComment = `INSERT INTO tbl_like (fk_commentId_like, fk_userId_like) 
+  VALUES ((SELECT commentId FROM tbl_comments WHERE commentId=${id}), (SELECT id FROM tbl_user WHERE id=${userId}))`;
+  const sql_LikeReply = `INSERT INTO tbl_like (fk_replyId_like, fk_userId_like) VALUES ((SELECT replyId FROM tbl_replies WHERE replyId=${id}), (SELECT id FROM tbl_user WHERE id=${userId}))`;
+  const sql_DislikePost = `DELETE FROM tbl_like WHERE fk_postId_like= ${id} AND fk_userId_like = ${userId}`;
+  const sql_DislikeComment = `DELETE FROM tbl_like WHERE fk_commentId_like= ${id} AND fk_userId_like = ${userId}`;
+  const sql_DislikeReply = `DELETE FROM tbl_like WHERE fk_replyId_like= ${id} AND fk_userId_like = ${userId}`;
+  const sql_IncreaseLikesCountPost = `UPDATE tbl_post  SET likesCount = likesCount+1 WHERE postId=${id}`;
+  const sql_IncreaseLikesCountComment = `UPDATE tbl_comments  SET likesCount = likesCount+1 WHERE commentId=${id}`;
+  const sql_IncreaseLikesCountReply = `UPDATE tbl_replies  SET likesCount = likesCount+1 WHERE replyId=${id}`;
+  const sql_DecreseLikesCountPost = `UPDATE tbl_post  SET likesCount = likesCount-1 WHERE postId=${id}`;
+  const sql_DecreseLikesCountComment = `UPDATE tbl_comments  SET likesCount = likesCount-1 WHERE commentId=${id}`;
+  const sql_DecreseLikesCountReply = `UPDATE tbl_replies  SET likesCount = likesCount-1 WHERE replyId=${id}`;
   switch (like) {
     case false:
       try {
-        await db.query(sql_LikePost);
-        const result = await db.query(sql_IncreaseLikesCount);
-        if (result) {
-          const [updatedCount, _] = await db.query(sql_getUpdatedCount);
-          console.log(updatedCount[0].likesCount);
-          res
-            .status(200)
-            .json({ liked: true, count: updatedCount[0].likesCount });
+        const result_1 = await db.query(
+          origin === "post"
+            ? sql_LikePost
+            : origin === "comment"
+            ? sql_LikeComment
+            : origin === "reply" && sql_LikeReply
+        );
+        const result_2 = await db.query(
+          origin === "post"
+            ? sql_IncreaseLikesCountPost
+            : origin === "comment"
+            ? sql_IncreaseLikesCountComment
+            : origin === "reply" && sql_IncreaseLikesCountReply
+        );
+        if (result_1 && result_2) {
+          res.status(200).json({ liked: true });
         }
       } catch (err) {
         console.log(err);
@@ -118,13 +163,22 @@ export const likePost = async (req, res, next) => {
       break;
     case true:
       try {
-        await db.query(sql_DislikePost);
-        const result = await db.query(sql_DecreseLikesCount);
-        if (result) {
-          const [updatedCount, _] = await db.query(sql_getUpdatedCount);
-          res
-            .status(200)
-            .json({ liked: false, count: updatedCount[0].likesCount });
+        const result_1 = await db.query(
+          origin === "post"
+            ? sql_DislikePost
+            : origin === "comment"
+            ? sql_DislikeComment
+            : origin === "reply" && sql_DislikeReply
+        );
+        const result_2 = await db.query(
+          origin === "post"
+            ? sql_DecreseLikesCountPost
+            : origin === "comment"
+            ? sql_DecreseLikesCountComment
+            : origin === "reply" && sql_DecreseLikesCountReply
+        );
+        if (result_1 && result_2) {
+          res.status(200).json({ liked: false });
         }
       } catch (err) {
         console.log(err);
@@ -147,7 +201,6 @@ export const createComment = async (req, res) => {
   const sql_getCommentCount = `SELECT commentCount FROM tbl_post WHERE postId = ${postId} `;
   try {
     await db.execute(sql_createComment);
-
     const updatedCount = await db.execute(sql_increaseCommentCount);
     if (updatedCount) {
       const [count, _] = await db.execute(sql_getCommentCount);
@@ -160,7 +213,7 @@ export const createComment = async (req, res) => {
 };
 
 export const getComments = async (req, res, next) => {
-  const sql_getComments = `SELECT commentId, fk_postId_comment, fk_UserId_comment, text, date, username, picUrl FROM tbl_comments, tbl_user WHERE tbl_comments.fk_userId_comment=tbl_user.id`;
+  const sql_getComments = `SELECT commentId, fk_postId_comment, fk_userId_comment, text, date, likesCount, username, picUrl FROM tbl_comments, tbl_user WHERE tbl_comments.fk_userId_comment=tbl_user.id`;
   try {
     const [comments, _] = await db.execute(sql_getComments);
     res.status(200).json({ comments });
@@ -170,12 +223,12 @@ export const getComments = async (req, res, next) => {
 };
 
 ////////////////////
-//  REPLY TO COMMENT
+// REPLY TO COMMENT
 ////////////////////
 
 export const createReply = async (req, res, next) => {
   const { commentId, userId, text, date } = req.body;
-  const sql_createReply = `INSERT INTO tbl_replies (fk_commentId, fk_userId, text, date) VALUES (${commentId},${userId},"${text}","${date}")`;
+  const sql_createReply = `INSERT INTO tbl_replies (fk_commentId, fk_userId_reply, text, date) VALUES (${commentId},${userId},"${text}","${date}")`;
 
   try {
     const result = await db.execute(sql_createReply);
@@ -187,7 +240,7 @@ export const createReply = async (req, res, next) => {
 };
 
 export const getReplies = async (req, res, next) => {
-  const sql_getReplies = `SELECT replyId, fk_commentId, fk_UserId, text, date, username, picUrl FROM tbl_replies, tbl_user WHERE tbl_replies.fk_userId=tbl_user.id`;
+  const sql_getReplies = `SELECT replyId, fk_commentId, fk_userId_reply, text, date, likesCount, username, picUrl FROM tbl_replies, tbl_user WHERE tbl_replies.fk_userId_reply=tbl_user.id`;
   try {
     const [replies, _] = await db.execute(sql_getReplies);
     console.log(replies);

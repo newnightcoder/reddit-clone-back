@@ -8,6 +8,7 @@ postRouter.post("/", authorizeToken, postController.createPost);
 postRouter.post("/edit", authorizeToken, postController.editPost);
 postRouter.get("/", authorizeToken, postController.getPosts);
 postRouter.post("/user", authorizeToken, postController.getUserPosts);
+postRouter.get("/user", authorizeToken, postController.getUsers);
 postRouter.post("/like", authorizeToken, postController.likePost);
 postRouter.post("/comment", authorizeToken, postController.createComment);
 postRouter.get("/comment", authorizeToken, postController.getComments);

@@ -30,7 +30,6 @@ export const authorizeToken = (req, res, next) => {
         } else return res.status(403).json({ message: "nope sorry!" });
       }
       req.user = user;
-      // res.status(200).json({ isAuthenticated: true });
       next();
     });
   } catch (error) {

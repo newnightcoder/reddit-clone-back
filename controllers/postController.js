@@ -39,6 +39,22 @@ export const getUserPosts = async (req, res, next) => {
 };
 
 ///////////////////
+// GET ALL USERS
+///////////////////
+
+export const getUsers = async (req, res, next) => {
+  const sql_getAllUsers = `SELECT id, username, picUrl, creationDate,role FROM tbl_user`;
+  try {
+    const [users, _] = await db.execute(sql_getAllUsers);
+    if (users) {
+      res.status(200).json({ users });
+    }
+  } catch (error) {
+    throw error;
+  }
+};
+
+///////////////////
 //  CREATE POST
 ///////////////////
 

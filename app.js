@@ -1,6 +1,7 @@
 import cors from "cors";
 import express from "express";
 import * as path from "path";
+import "./middleware/metascraper.js";
 import authRoute from "./routes/authRoute.js";
 import postRoute from "./routes/postRoute.js";
 const app = express();
@@ -20,3 +21,5 @@ app.use("/post", postRoute);
 app.listen(PORT, () => {
   console.log(`server's running on port ${PORT}`);
 });
+
+// getOGMetaData();

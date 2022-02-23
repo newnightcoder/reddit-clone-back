@@ -1,10 +1,12 @@
 import express from "express";
 import * as postController from "../controllers/postController.js";
 import { authorizeToken } from "../middleware/jwt.js";
+import { upload } from "../middleware/multer.js";
 
 const postRouter = express.Router();
 
 postRouter.post("/", authorizeToken, postController.createPost);
+postRouter.post("/post-image", upload, postController.savePostImg);
 postRouter.post("/edit", authorizeToken, postController.editPost);
 postRouter.get("/", authorizeToken, postController.getPosts);
 postRouter.post("/user", authorizeToken, postController.getUserPosts);

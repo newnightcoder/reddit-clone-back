@@ -1,17 +1,18 @@
 import { db } from "../db/db.config.js";
 
 export class Post {
-  constructor(id, userId, title, text, date, likesCount) {
+  constructor(id, userId, title, text, date, imgUrl, likesCount) {
     this.id = id;
     this.userId = userId;
     this.title = title;
     this.text = text;
     this.date = date;
+    this.imgUrl = imgUrl;
     this.likesCount = likesCount;
   }
 
   static async getPosts() {
-    const GET_POSTS = `SELECT title, postId, text, date, fk_userId_post, username, picUrl, likesCount, commentCount FROM tbl_post, tbl_user WHERE tbl_post.fk_userId_post=tbl_user.id`;
+    const GET_POSTS = `SELECT title, postId, text, date, imgUrl, fk_userId_post, username, picUrl, likesCount, commentCount FROM tbl_post, tbl_user WHERE tbl_post.fk_userId_post=tbl_user.id`;
     try {
       const [posts, _] = await db.execute(GET_POSTS);
       const postsInOrder = posts.sort((a, b) => {
@@ -48,13 +49,13 @@ export class Post {
   }
 
   async create() {
-    const sqlCreatePost = `INSERT INTO tbl_post (fk_userId_post,title, text, date) VALUES (${this.userId},"${this.title}", "${this.text}","${this.date}")`;
+    const sqlCreatePost = `INSERT INTO tbl_post (fk_userId_post, title, text, date, imgUrl) VALUES (${this.userId},"${this.title}", "${this.text}", "${this.date}","${this.imgUrl}")`;
     try {
       const [res, _] = await db.execute(sqlCreatePost);
       const { insertId } = res;
       return insertId;
     } catch (error) {
-      throw error;
+      console.log(error);
     }
   }
 }

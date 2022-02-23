@@ -17,4 +17,4 @@ const picStorage = multer.diskStorage({
   },
 });
 
-export const upload = multer({ storage: picStorage }).single("userBlob");
+export const upload = multer({ storage: picStorage }).single("image");

@@ -55,12 +55,27 @@ export const getUsers = async (req, res, next) => {
 };
 
 ///////////////////
+//  SAVE POST IMG
+///////////////////
+
+export const savePostImg = (req, res, next) => {
+  const { path } = req.file;
+  const errorDB = "Oops désolé, petit problème de post...";
+  console.log("path", path);
+  try {
+    res.status(201).json({ imgUrl: `http://localhost:3001/${path}` });
+    next();
+  } catch (err) {
+    res.status(500).json({ error: errorDB });
+  }
+};
+///////////////////
 //  CREATE POST
 ///////////////////
 
 export const createPost = async (req, res, next) => {
-  const { userId, title, text, date } = req.body;
-  const post = new Post(null, userId, title, text, date, 0);
+  const { userId, title, text, date, imgUrl } = req.body;
+  const post = new Post(null, userId, title, text, date, imgUrl, 0);
   const errorDB = "Oops désolé, petit problème de post...";
   try {
     const postId = await post.create();

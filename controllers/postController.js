@@ -142,7 +142,7 @@ export const deletePost = async (req, res, next) => {
         .json({ error: "oops petit problème lors de la suppression du post" });
     }
   } catch (error) {
-    throw error;
+    console.log(error);
   }
 };
 

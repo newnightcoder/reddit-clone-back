@@ -7,6 +7,9 @@
   "author": "nightcoder",
   "license": "ISC",
   "private": true,
+  "scripts": {
+    "start": "node app.js"
+  },
   "dependencies": {
     "bcrypt": "^5.0.1",
     "cors": "^2.8.5",

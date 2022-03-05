@@ -4,6 +4,7 @@ import * as path from "path";
 import "./middleware/metascraper.js";
 import authRoute from "./routes/authRoute.js";
 import postRoute from "./routes/postRoute.js";
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 const __dirname = path.resolve();
@@ -21,5 +22,3 @@ app.use("/post", postRoute);
 app.listen(PORT, () => {
   console.log(`server's running on port ${PORT}`);
 });
-
-// getOGMetaData();

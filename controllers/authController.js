@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { db } from "../db/db.config.js";
+import { db } from "../DB/db.config.js";
 import { createToken } from "../middleware/jwt.js";
 import { User } from "../models/userModel.js";
 

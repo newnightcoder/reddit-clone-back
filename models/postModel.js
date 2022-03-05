@@ -1,4 +1,4 @@
-import { db } from "../db/db.config.js";
+import { db } from "../DB/db.config.js";
 
 export class Post {
   constructor(id, userId, title, text, date, imgUrl, likesCount) {

@@ -18,6 +18,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/userpics", express.static(path.join(__dirname, "userpics")));
 app.use("/auth", authRoute);
 app.use("/post", postRoute);
+app.use("/", () => {
+  res.send("app working");
+});
 
 app.listen(PORT, () => {
   console.log(`server's running on port ${PORT}`);

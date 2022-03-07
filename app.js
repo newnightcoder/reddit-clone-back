@@ -18,7 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/userpics", express.static(path.join(__dirname, "userpics")));
 app.use("/auth", authRoute);
 app.use("/post", postRoute);
-app.use("/", () => {
+app.use("/", (req, res) => {
   res.send("app working");
 });
 

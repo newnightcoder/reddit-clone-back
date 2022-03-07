@@ -16,11 +16,11 @@ app.use(express.urlencoded({ extended: true }));
 
 // routes middlewares
 app.use("/userpics", express.static(path.join(__dirname, "userpics")));
-app.use("/auth", authRoute);
-app.use("/post", postRoute);
-app.use("/", (req, res) => {
-  res.send("app working");
-});
+app.use("/api/auth", authRoute);
+app.use("/api/post", postRoute);
+// app.use("/api", (req, res) => {
+//   res.send("app working");
+// });
 
 app.listen(PORT, () => {
   console.log(`server's running on port ${PORT}`);

@@ -10,9 +10,9 @@ const PORT = process.env.PORT || 3001;
 const __dirname = path.resolve();
 
 // app middlewares
-app.use(express.json());
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 // routes middlewares
 app.use("/userpics", express.static(path.join(__dirname, "userpics")));

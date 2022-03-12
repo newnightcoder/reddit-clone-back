@@ -4,6 +4,10 @@ import { Post } from "../models/postModel.js";
 ///////////////////
 // GET ALL POSTS
 ///////////////////
+const imgUrlHost =
+  process.env.NODE_ENV === "production"
+    ? "https://social-media-sql-backend.herokuapp.com"
+    : "http://localhost:3001";
 
 export const getPosts = async (req, res, next) => {
   try {
@@ -60,7 +64,6 @@ export const getUsers = async (req, res, next) => {
 
 export const savePostImg = (req, res, next) => {
   const { path } = req.file;
-  const imgUrlHost = "https://social-media-sql-backend.herokuapp.com";
 
   const errorDB = "Oops désolé, petit problème de post...";
   console.log("path", path);

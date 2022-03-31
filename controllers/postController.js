@@ -23,6 +23,22 @@ export const getPosts = async (req, res, next) => {
   }
 };
 
+///////////////////
+// GET ALL LIKES
+///////////////////
+
+export const getLikes = async (req, res, next) => {
+  try {
+    const likes = await Post.getLikes();
+    res.status(200).json({
+      likes,
+    });
+    next();
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 /////////////////////////////
 // GET ALL POSTS FROM A USER
 /////////////////////////////
@@ -65,13 +81,13 @@ export const getUsers = async (req, res, next) => {
 export const savePostImg = (req, res, next) => {
   const { path } = req.file;
 
-  const errorDB = "Oops désolé, petit problème de post...";
+  const errorServer = "Oops désolé, petit problème de post...";
   console.log("path", path);
   try {
     res.status(201).json({ imgUrl: `${imgUrlHost}/${path}` });
     next();
   } catch (err) {
-    res.status(500).json({ error: errorDB });
+    res.status(500).json({ error: errorServer });
   }
 };
 ///////////////////
@@ -96,9 +112,9 @@ export const createPost = async (req, res, next) => {
 ///////////////////
 
 export const editPost = async (req, res, next) => {
-  const { origin, id, title, text } = req.body;
-  console.log(origin, id, title, text);
-  const sqlEditPost = `UPDATE tbl_post SET title = "${title}", text = "${text}" WHERE postId=${id}`;
+  const { origin, id, title, text, imgUrl } = req.body;
+  console.log(origin, id, title, text, imgUrl);
+  const sqlEditPost = `UPDATE tbl_post SET title = "${title}", text = "${text}",imgUrl="${imgUrl}" WHERE postId=${id}`;
   const sqlEditComment = `UPDATE tbl_comments SET text = "${text}" WHERE commentId=${id}`;
   const sqlEditReply = `UPDATE tbl_replies SET text = "${text}" WHERE replyId=${id}`;
   const errorDB = "Oops désolé, petit problème de post...";
@@ -123,12 +139,11 @@ export const editPost = async (req, res, next) => {
 ///////////////////
 
 export const deletePost = async (req, res, next) => {
-  const { id, postId, origin } = req.body;
-  console.log(id, postId, origin);
-  const sql_deletePost = `DELETE FROM tbl_post WHERE postId=${id}`;
-  const sql_deleteComment = `DELETE FROM tbl_comments WHERE commentId=${id}`;
-  const sql_decreaseCommentCount = `UPDATE tbl_post SET commentCount= commentCount-1 WHERE postId=${postId}`;
-  const sql_deleteReply = `DELETE FROM tbl_replies WHERE replyId=${id}`;
+  const { postId, origin, postIdComment } = req.body;
+  const sql_deletePost = `DELETE FROM tbl_post WHERE postId=${postId}`;
+  const sql_deleteComment = `DELETE FROM tbl_comments WHERE commentId=${postId}`;
+  const sql_decreaseCommentCount = `UPDATE tbl_post SET commentCount= commentCount-1 WHERE postId=${postIdComment}`;
+  const sql_deleteReply = `DELETE FROM tbl_replies WHERE replyId=${postId}`;
   try {
     if (origin === "comment") {
       await db.execute(sql_decreaseCommentCount);
@@ -190,6 +205,7 @@ export const likePost = async (req, res, next) => {
             : origin === "reply" && sql_IncreaseLikesCountReply
         );
         if (result_1 && result_2) {
+          console.log("like result1", result_1, "like result2", result_2);
           res.status(200).json({ liked: true });
         }
       } catch (err) {
@@ -214,6 +230,8 @@ export const likePost = async (req, res, next) => {
             : origin === "reply" && sql_DecreseLikesCountReply
         );
         if (result_1 && result_2) {
+          console.log("dislike result1", result_1, "dislike result2", result_2);
+
           res.status(200).json({ liked: false });
         }
       } catch (err) {

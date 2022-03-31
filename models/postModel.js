@@ -17,7 +17,8 @@ export class Post {
       const [posts, _] = await db.execute(GET_POSTS);
       const postsInOrder = posts.sort((a, b) => {
         if (a.postId < b.postId) return 1;
-        else return -1;
+        if (a.postId > b.postId) return -1;
+        return 0;
       });
       return postsInOrder;
     } catch (error) {
@@ -25,7 +26,7 @@ export class Post {
     }
   }
   static async getUserPosts(userId) {
-    const GET_USER_POSTS = `SELECT title, postId, text, date, fk_userId_post, username, picUrl, likesCount, commentCount FROM tbl_post, tbl_user WHERE tbl_post.fk_userId_post="${userId}" AND tbl_user.id="${userId}"`;
+    const GET_USER_POSTS = `SELECT title, postId, text, date, imgUrl, fk_userId_post, username, picUrl, likesCount, commentCount FROM tbl_post, tbl_user WHERE tbl_post.fk_userId_post="${userId}" AND tbl_user.id="${userId}"`;
     try {
       const [posts, _] = await db.execute(GET_USER_POSTS);
       const postsInOrder = posts.sort((a, b) => {

@@ -80,7 +80,7 @@ export class User {
   }
 
   async addAvatarImg(path, imgType) {
-    const imgUrlHost = "http://localhost:3001";
+    const imgUrlHost = "https://social-media-sql-backend.herokuapp.com";
     const sqlAdd_avatarImg = `UPDATE tbl_user
     SET picUrl = "${imgUrlHost}/${path}" WHERE id=?`;
     const sqlGet_avatarImg = `SELECT picUrl FROM tbl_user WHERE id = ?`;

@@ -4,10 +4,7 @@ import { Post } from "../models/postModel.js";
 ///////////////////
 // GET ALL POSTS
 ///////////////////
-const imgUrlHost =
-  process.env.NODE_ENV === "production"
-    ? "https://social-media-sql-backend.herokuapp.com"
-    : "http://localhost:3001";
+const imgUrlHost = "https://social-media-sql-backend.herokuapp.com";
 
 export const getPosts = async (req, res, next) => {
   try {

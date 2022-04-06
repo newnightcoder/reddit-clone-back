@@ -59,7 +59,7 @@ export const addUserName = async (req, res, next) => {
   const errorBackend = "Oops! petit problème de notre part désolé";
   const errorDuplicate =
     "Ce nom d'utilisateur est déjà pris!\nVeuillez en choisir un autre.";
-  const user = new User(id, null, null, username, null, creationDate);
+  const user = new User(id, null, null, username, null, null, creationDate);
   try {
     const result = await user.addUsername();
     const accessToken = createToken(id);
@@ -78,12 +78,12 @@ export const addUserName = async (req, res, next) => {
 
 export const addUserPic = async (req, res, next) => {
   const { path } = req.file;
-  const { id } = req.body;
-  console.log("id", id, "req.body", req.body);
-  const user = new User(id, null, null, null, null, null);
+  const { id, imgType } = req.body;
+  console.log("id", id, "imgType", imgType, req.body, "req.body");
+  const user = new User(id);
 
   try {
-    const picUrl = await user.addAvatarImg(path);
+    const picUrl = await user.addAvatarImg(path, imgType);
     res.status(200).json({ picUrl });
   } catch (error) {
     console.log(error);
@@ -116,7 +116,7 @@ export const editUsername = async (req, res, next) => {
 
 export const getUserProfile = async (req, res, next) => {
   const id = req.body.id;
-  const sql_getUserProfile = `SELECT id, username, picUrl, creationDate FROM tbl_user WHERE id=?`;
+  const sql_getUserProfile = `SELECT id, username, picUrl, bannerUrl, creationDate FROM tbl_user WHERE id=?`;
   try {
     const [user, _] = await db.execute(sql_getUserProfile, [id]);
     if (user) {

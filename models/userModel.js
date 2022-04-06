@@ -1,12 +1,22 @@
 import { db } from "../DB/db.config.js";
 
 export class User {
-  constructor(id, email, password, username, avatarImg, creationDate, role) {
+  constructor(
+    id,
+    email,
+    password,
+    username,
+    avatarImg,
+    bannerImg,
+    creationDate,
+    role
+  ) {
     this.id = id;
     this.email = email;
     this.password = password;
     this.username = username;
     this.avatarImg = avatarImg;
+    this.bannerImg = bannerImg;
     this.creationDate = creationDate;
     this.role = role;
   }
@@ -69,25 +79,59 @@ export class User {
     }
   }
 
-  async addAvatarImg(path) {
+  async addAvatarImg(path, imgType) {
     const imgUrlHost = "http://localhost:3001";
     const sqlAdd_avatarImg = `UPDATE tbl_user
     SET picUrl = "${imgUrlHost}/${path}" WHERE id=?`;
     const sqlGet_avatarImg = `SELECT picUrl FROM tbl_user WHERE id = ?`;
 
+    const sqlAdd_bannerImg = `UPDATE tbl_user
+    SET bannerUrl = "${imgUrlHost}/${path}" WHERE id=?`;
+    const sqlGet_bannerImg = `SELECT bannerUrl FROM tbl_user WHERE id = ?`;
+
     const connection = await db.getConnection();
-    try {
-      const res = await connection.execute(sqlAdd_avatarImg, [this.id]);
-      if (res) {
-        const [avatarImg, _] = await connection.execute(sqlGet_avatarImg, [
-          this.id,
-        ]);
-        return avatarImg[0].picUrl;
-      }
-    } catch (error) {
-      throw error;
-    } finally {
-      connection.release();
+
+    switch (imgType) {
+      case "pic":
+        {
+          try {
+            console.log("pic request");
+            const res = await connection.execute(sqlAdd_avatarImg, [this.id]);
+            if (res) {
+              const [avatarImg, _] = await connection.execute(
+                sqlGet_avatarImg,
+                [this.id]
+              );
+              return avatarImg[0].picUrl;
+            }
+          } catch (error) {
+            throw error;
+          } finally {
+            connection.release();
+          }
+        }
+        break;
+      case "banner":
+        {
+          try {
+            console.log("banner request");
+            const res = await connection.execute(sqlAdd_bannerImg, [this.id]);
+            if (res) {
+              const [bannerImg, _] = await connection.execute(
+                sqlGet_bannerImg,
+                [this.id]
+              );
+              return bannerImg[0].bannerUrl;
+            }
+          } catch (error) {
+            throw error;
+          } finally {
+            connection.release();
+          }
+        }
+        break;
+      default:
+        break;
     }
   }
 }

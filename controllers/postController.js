@@ -308,5 +308,5 @@ export const sendLinkData = async (req, res) => {
   const result = await scrape(targetUrl);
   console.log("result scrape", result);
 
-  res.json({ result });
+  res.status(200).json({ result });
 };

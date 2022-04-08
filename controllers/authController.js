@@ -79,7 +79,7 @@ export const addUserName = async (req, res, next) => {
 export const addUserPic = async (req, res, next) => {
   const { path } = req.file;
   const { id, imgType } = req.body;
-  console.log("id", id, "imgType", imgType, req.body, "req.body");
+  console.log("image path", path);
   const user = new User(id);
 
   try {

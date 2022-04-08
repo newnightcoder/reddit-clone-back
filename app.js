@@ -8,6 +8,7 @@ import postRoute from "./routes/postRoute.js";
 const app = express();
 const PORT = process.env.PORT || 3001;
 const __dirname = path.resolve();
+console.log("dirname", __dirname);
 
 // app middlewares
 app.use(cors());

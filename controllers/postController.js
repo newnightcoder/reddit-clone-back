@@ -1,4 +1,5 @@
 import { db } from "../DB/db.config.js";
+import { scrape } from "../middleware/metascraper.js";
 import { Post } from "../models/postModel.js";
 
 ///////////////////
@@ -299,4 +300,13 @@ export const getReplies = async (req, res, next) => {
   } catch (error) {
     throw error;
   }
+};
+
+export const sendLinkData = async (req, res) => {
+  const { targetUrl } = req.body;
+
+  const result = await scrape(targetUrl);
+  console.log("result scrape", result);
+
+  res.json({ result });
 };

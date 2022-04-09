@@ -105,6 +105,7 @@ export const createPost = async (req, res, next) => {
     isPreview,
     preview
   );
+  console.log(req.body, isPreview, preview);
   const errorDB = "Oops désolé, petit problème de post...";
   try {
     const postId = await post.create();
@@ -314,9 +315,8 @@ export const getReplies = async (req, res, next) => {
 
 export const sendLinkData = async (req, res) => {
   const { targetUrl } = req.body;
-
   const result = await scrape(targetUrl);
-  console.log("result scrape", result);
+  // console.log("result scrape", result);
 
   res.status(200).json({ result });
 };

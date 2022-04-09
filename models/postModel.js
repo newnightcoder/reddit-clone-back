@@ -24,7 +24,7 @@ export class Post {
   }
 
   static async getPosts() {
-    const GET_POSTS = `SELECT title, postId, text, date, imgUrl, fk_userId_post, username, picUrl, likesCount, commentCount FROM tbl_post, tbl_user WHERE tbl_post.fk_userId_post=tbl_user.id`;
+    const GET_POSTS = `SELECT title, postId, text, date, imgUrl, fk_userId_post, username, picUrl, likesCount, commentCount,isPreview, previewTitle, previewText, previewImg, previewPub, previewPubLogo FROM tbl_post, tbl_user WHERE tbl_post.fk_userId_post=tbl_user.id`;
     try {
       const [posts, _] = await db.execute(GET_POSTS);
       const postsInOrder = posts.sort((a, b) => {
@@ -62,9 +62,11 @@ export class Post {
   }
 
   async create() {
-    const sqlCreatePost = this.isPreview
-      ? `INSERT INTO tbl_post (fk_userId_post, title, text, date, imgUrl, isPreview, previewTitle, previewText, previewImg, previewPub, previewUrl, previewPubLogo ) VALUES (${this.userId},"${this.title}", "${this.text}", "${this.date}","${this.imgUrl}","${this.isPreview}","${this.preview.title}","${this.preview.description}","${this.preview.image}","${this.preview.publisher}","${this.preview.url}","${this.preview.logo}")`
-      : `INSERT INTO tbl_post (fk_userId_post, title, text, date, imgUrl) VALUES (${this.userId},"${this.title}", "${this.text}", "${this.date}","${this.imgUrl}")`;
+    console.log(this.isPreview, this.preview);
+    const sqlCreatePost =
+      this.isPreview === 1
+        ? `INSERT INTO tbl_post (fk_userId_post, title, text, date, imgUrl, isPreview, previewTitle, previewText, previewImg, previewPub, previewUrl, previewPubLogo ) VALUES (${this.userId},"${this.title}", "${this.text}", "${this.date}","${this.imgUrl}","${this.isPreview}","${this.preview.title}","${this.preview.description}","${this.preview.image}","${this.preview.publisher}","${this.preview.url}","${this.preview.logo}")`
+        : `INSERT INTO tbl_post (fk_userId_post, title, text, date, imgUrl) VALUES (${this.userId},"${this.title}", "${this.text}", "${this.date}","${this.imgUrl}")`;
     try {
       const [res, _] = await db.execute(sqlCreatePost);
       const { insertId } = res;

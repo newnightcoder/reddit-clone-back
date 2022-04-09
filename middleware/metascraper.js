@@ -34,7 +34,7 @@ export const scrape = async (targetUrl) => {
       },
     });
     const metadata = await metascraper({ html, url });
-    console.log(metadata);
+    // console.log(metadata);
     return metadata;
   } catch (error) {
     console.log(error);

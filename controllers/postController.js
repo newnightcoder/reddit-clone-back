@@ -93,8 +93,18 @@ export const savePostImg = (req, res, next) => {
 ///////////////////
 
 export const createPost = async (req, res, next) => {
-  const { userId, title, text, date, imgUrl } = req.body;
-  const post = new Post(null, userId, title, text, date, imgUrl, 0);
+  const { userId, title, text, date, imgUrl, isPreview, preview } = req.body;
+  const post = new Post(
+    null,
+    userId,
+    title,
+    text,
+    date,
+    imgUrl,
+    0,
+    isPreview,
+    preview
+  );
   const errorDB = "Oops désolé, petit problème de post...";
   try {
     const postId = await post.create();

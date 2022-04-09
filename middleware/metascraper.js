@@ -2,12 +2,18 @@ import { got } from "got";
 import createMetascraper from "metascraper";
 import metascraperDescription from "metascraper-description";
 import metascraperImage from "metascraper-image";
+import metascraperLogo from "metascraper-logo";
+import metascraperPublisher from "metascraper-publisher";
 import metascraperTitle from "metascraper-title";
+import metascraperTitleUrl from "metascraper-url";
 
 const metascraper = createMetascraper([
-  metascraperDescription(),
-  metascraperImage(),
   metascraperTitle(),
+  metascraperImage(),
+  metascraperDescription(),
+  metascraperPublisher(),
+  metascraperLogo(),
+  metascraperTitleUrl(),
 ]);
 
 // const targetUrl = "https://www.youtube.com/watch?v=3HNyXCPDQ7Q";

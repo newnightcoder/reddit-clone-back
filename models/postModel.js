@@ -1,7 +1,17 @@
 import { db } from "../DB/db.config.js";
 
 export class Post {
-  constructor(id, userId, title, text, date, imgUrl, likesCount) {
+  constructor(
+    id,
+    userId,
+    title,
+    text,
+    date,
+    imgUrl,
+    likesCount,
+    isPreview,
+    preview
+  ) {
     this.id = id;
     this.userId = userId;
     this.title = title;
@@ -9,6 +19,8 @@ export class Post {
     this.date = date;
     this.imgUrl = imgUrl;
     this.likesCount = likesCount;
+    this.isPreview = isPreview;
+    this.preview = preview;
   }
 
   static async getPosts() {
@@ -50,7 +62,9 @@ export class Post {
   }
 
   async create() {
-    const sqlCreatePost = `INSERT INTO tbl_post (fk_userId_post, title, text, date, imgUrl) VALUES (${this.userId},"${this.title}", "${this.text}", "${this.date}","${this.imgUrl}")`;
+    const sqlCreatePost = this.isPreview
+      ? `INSERT INTO tbl_post (fk_userId_post, title, text, date, imgUrl, isPreview, previewTitle, previewText, previewImg, previewPub, previewUrl, previewPubLogo ) VALUES (${this.userId},"${this.title}", "${this.text}", "${this.date}","${this.imgUrl}","${this.isPreview}","${this.preview.title}","${this.preview.description}","${this.preview.image}","${this.preview.publisher}","${this.preview.url}","${this.preview.logo}")`
+      : `INSERT INTO tbl_post (fk_userId_post, title, text, date, imgUrl) VALUES (${this.userId},"${this.title}", "${this.text}", "${this.date}","${this.imgUrl}")`;
     try {
       const [res, _] = await db.execute(sqlCreatePost);
       const { insertId } = res;

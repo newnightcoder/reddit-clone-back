@@ -1,3 +1,4 @@
+import aws from "aws-sdk";
 import cors from "cors";
 import express from "express";
 import * as path from "path";
@@ -9,6 +10,8 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const __dirname = path.resolve();
 console.log("dirname", __dirname);
+
+const s3 = new aws.S3();
 
 // app middlewares
 app.use(cors());
@@ -25,4 +28,9 @@ app.use("/api/post", postRoute);
 
 app.listen(PORT, () => {
   console.log(`server's running on port ${PORT}`);
+  // s3.listObjects({ Bucket: "forum-s3-bucket" }, (err, data) => {
+  //   if (err) {
+  //     console.log(err, err.stack);
+  //   } else console.log(data);
+  // });
 });

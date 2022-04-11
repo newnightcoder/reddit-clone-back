@@ -81,12 +81,12 @@ export const savePostImg = (req, res, next) => {
 
   const errorServer = "Oops désolé, petit problème de post...";
   console.log("path", path);
-  try {
-    res.status(201).json({ imgUrl: `${imgUrlHost}/${path}` });
-    next();
-  } catch (err) {
-    res.status(500).json({ error: errorServer });
-  }
+  // try {
+  //   res.status(201).json({ imgUrl: `${imgUrlHost}/${path}` });
+  //   next();
+  // } catch (err) {
+  //   res.status(500).json({ error: errorServer });
+  // }
 };
 ///////////////////
 //  CREATE POST

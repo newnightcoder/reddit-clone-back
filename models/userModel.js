@@ -79,14 +79,14 @@ export class User {
     }
   }
 
-  async addAvatarImg(path, imgType) {
-    const imgUrlHost = "https://social-media-sql-backend.herokuapp.com";
+  async addAvatarImg(fileLocation, imgType) {
+    // const imgUrlHost = "https://social-media-sql-backend.herokuapp.com";
     const sqlAdd_avatarImg = `UPDATE tbl_user
-    SET picUrl = "${imgUrlHost}/${path}" WHERE id=?`;
+    SET picUrl = "${fileLocation}" WHERE id=?`;
     const sqlGet_avatarImg = `SELECT picUrl FROM tbl_user WHERE id = ?`;
 
     const sqlAdd_bannerImg = `UPDATE tbl_user
-    SET bannerUrl = "${imgUrlHost}/${path}" WHERE id=?`;
+    SET bannerUrl = "${fileLocation}" WHERE id=?`;
     const sqlGet_bannerImg = `SELECT bannerUrl FROM tbl_user WHERE id = ?`;
 
     const connection = await db.getConnection();

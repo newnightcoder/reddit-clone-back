@@ -77,13 +77,13 @@ export const addUserName = async (req, res, next) => {
 /////////////////////////////////////
 
 export const addUserPic = async (req, res, next) => {
-  const { path } = req.file;
+  const fileLocation = req.file.location;
   const { id, imgType } = req.body;
-  console.log("image path", path);
+  console.log("image fileLocation", fileLocation);
   const user = new User(id);
 
   try {
-    const picUrl = await user.addAvatarImg(path, imgType);
+    const picUrl = await user.addAvatarImg(fileLocation, imgType);
     res.status(200).json({ picUrl });
   } catch (error) {
     console.log(error);

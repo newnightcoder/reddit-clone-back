@@ -5,7 +5,8 @@ import { Post } from "../models/postModel.js";
 ///////////////////
 // GET ALL POSTS
 ///////////////////
-const imgUrlHost = "https://social-media-sql-backend.herokuapp.com";
+// const imgUrlHost = "https://social-media-sql-backend.herokuapp.com";
+const imgUrlHost = "http://localhost:3001";
 
 export const getPosts = async (req, res, next) => {
   try {
@@ -77,16 +78,16 @@ export const getUsers = async (req, res, next) => {
 ///////////////////
 
 export const savePostImg = (req, res, next) => {
-  const { path } = req.file;
+  const fileLocation = req.file.location;
 
   const errorServer = "Oops désolé, petit problème de post...";
-  console.log("path", path);
-  // try {
-  //   res.status(201).json({ imgUrl: `${imgUrlHost}/${path}` });
-  //   next();
-  // } catch (err) {
-  //   res.status(500).json({ error: errorServer });
-  // }
+  console.log("fileLocation", fileLocation);
+  try {
+    res.status(201).json({ imgUrl: fileLocation });
+    next();
+  } catch (err) {
+    res.status(500).json({ error: errorServer });
+  }
 };
 ///////////////////
 //  CREATE POST

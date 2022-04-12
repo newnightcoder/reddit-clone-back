@@ -28,9 +28,9 @@ app.use("/api/post", postRoute);
 
 app.listen(PORT, () => {
   console.log(`server's running on port ${PORT}`);
-  // s3.listObjects({ Bucket: "forum-s3-bucket" }, (err, data) => {
-  //   if (err) {
-  //     console.log(err, err.stack);
-  //   } else console.log(data);
-  // });
+  s3.listObjects({ Bucket: "forum-s3-bucket" }, (err, data) => {
+    if (err) {
+      console.log(err, err.stack);
+    } else console.log(data);
+  });
 });

@@ -15,10 +15,11 @@ const s3 = new aws.S3();
 const picStorage = multerS3({
   s3: s3,
   bucket: "forum-s3-bucket",
-  metadata: (req, file, cb) => {
+  acl: "public-read",
+  metadata: function (req, file, cb) {
     cb(null, { fieldName: file.fieldname });
   },
-  key: (req, file, cb) => {
+  key: function (req, file, cb) {
     cb(null, Date.now().toString());
   },
 });

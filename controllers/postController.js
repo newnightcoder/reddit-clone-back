@@ -5,17 +5,15 @@ import { Post } from "../models/postModel.js";
 ///////////////////
 // GET ALL POSTS
 ///////////////////
-// const imgUrlHost = "https://social-media-sql-backend.herokuapp.com";
-const imgUrlHost = "http://localhost:3001";
 
 export const getPosts = async (req, res, next) => {
   try {
     const posts = await Post.getPosts();
     const likes = await Post.getLikes();
-    res.status(200).json({
-      posts,
-      likes,
-    });
+    const array = [];
+    posts.forEach((post) => array.push(post.postId));
+    console.log(array);
+    res.status(200).json({ posts, likes });
     next();
   } catch (error) {
     console.log(error);

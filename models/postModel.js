@@ -24,21 +24,16 @@ export class Post {
   }
 
   static async getPosts() {
-    const GET_POSTS = `SELECT title, postId, text, date, imgUrl, fk_userId_post, username, picUrl, likesCount, commentCount,isPreview, previewTitle, previewText, previewImg, previewPub, previewPubLogo FROM tbl_post, tbl_user WHERE tbl_post.fk_userId_post=tbl_user.id`;
+    const sqlGetPost = `SELECT title, postId, text, date, imgUrl, fk_userId_post, username, picUrl, likesCount, commentCount, isPreview, previewTitle, previewText, previewImg, previewPub, previewUrl, previewPubLogo FROM tbl_post, tbl_user WHERE tbl_post.fk_userId_post=tbl_user.id`;
     try {
-      const [posts, _] = await db.execute(GET_POSTS);
-      const postsInOrder = posts.sort((a, b) => {
-        if (a.postId < b.postId) return 1;
-        if (a.postId > b.postId) return -1;
-        return 0;
-      });
-      return postsInOrder;
+      const [posts, _] = await db.execute(sqlGetPost);
+      return posts;
     } catch (error) {
       throw error;
     }
   }
   static async getUserPosts(userId) {
-    const GET_USER_POSTS = `SELECT title, postId, text, date, imgUrl, fk_userId_post, username, picUrl, likesCount, commentCount FROM tbl_post, tbl_user WHERE tbl_post.fk_userId_post="${userId}" AND tbl_user.id="${userId}"`;
+    const GET_USER_POSTS = `SELECT title, postId, text, date, imgUrl, fk_userId_post, username, picUrl, likesCount, commentCount, isPreview, previewTitle, previewText, previewImg, previewPub, previewUrl, previewPubLogo FROM tbl_post, tbl_user WHERE tbl_post.fk_userId_post="${userId}" AND tbl_user.id="${userId}"`;
     try {
       const [posts, _] = await db.execute(GET_USER_POSTS);
       const postsInOrder = posts.sort((a, b) => {

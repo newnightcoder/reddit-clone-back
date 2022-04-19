@@ -77,7 +77,7 @@ export const addUserName = async (req, res, next) => {
 /////////////////////////////////////
 
 export const addUserPic = async (req, res, next) => {
-  const fileLocation = req.file.location;
+  const fileLocation = req.file?.location;
   const { id, imgType } = req.body;
   console.log("image fileLocation", fileLocation);
   const user = new User(id);
@@ -99,6 +99,9 @@ export const editUsername = async (req, res, next) => {
   const { userId, username } = req.body;
   console.log(userId, username);
   const sql_EditUsername = `UPDATE tbl_user SET username="${username}" WHERE id=${userId}`;
+  const errorBackend = "Oops! petit problème de notre part désolé";
+  const errorDuplicate =
+    "Ce nom d'utilisateur est déjà pris!\nVeuillez en choisir un autre.";
   try {
     const result = await db.execute(sql_EditUsername);
     if (result) {
@@ -106,7 +109,10 @@ export const editUsername = async (req, res, next) => {
       res.status(200).json({ newName: username });
     }
   } catch (error) {
-    throw error;
+    const { errno } = error;
+    res.status(500).json({
+      error: errno === 1062 ? errorDuplicate : errorBackend,
+    });
   }
 };
 

@@ -150,3 +150,81 @@ export const deleteUser = async (req, res, next) => {
     throw error;
   }
 };
+
+////////////////////
+//  LIKE / UNLIKE
+////////////////////
+
+export const likePost = async (req, res, next) => {
+  const { origin, userId, id, like } = req.body;
+  const sql_LikePost = `INSERT INTO tbl_like (fk_postId_like, fk_userId_like) 
+  VALUES ((SELECT postId FROM tbl_post WHERE postId=${id}), 
+  (SELECT id FROM tbl_user WHERE id=${userId}))`;
+  const sql_LikeComment = `INSERT INTO tbl_like (fk_commentId_like, fk_userId_like) 
+  VALUES ((SELECT commentId FROM tbl_comments WHERE commentId=${id}), (SELECT id FROM tbl_user WHERE id=${userId}))`;
+  const sql_LikeReply = `INSERT INTO tbl_like (fk_replyId_like, fk_userId_like) VALUES ((SELECT replyId FROM tbl_replies WHERE replyId=${id}), (SELECT id FROM tbl_user WHERE id=${userId}))`;
+  const sql_DislikePost = `DELETE FROM tbl_like WHERE fk_postId_like= ${id} AND fk_userId_like = ${userId}`;
+  const sql_DislikeComment = `DELETE FROM tbl_like WHERE fk_commentId_like= ${id} AND fk_userId_like = ${userId}`;
+  const sql_DislikeReply = `DELETE FROM tbl_like WHERE fk_replyId_like= ${id} AND fk_userId_like = ${userId}`;
+  const sql_IncreaseLikesCountPost = `UPDATE tbl_post  SET likesCount = likesCount+1 WHERE postId=${id}`;
+  const sql_IncreaseLikesCountComment = `UPDATE tbl_comments  SET likesCount = likesCount+1 WHERE commentId=${id}`;
+  const sql_IncreaseLikesCountReply = `UPDATE tbl_replies  SET likesCount = likesCount+1 WHERE replyId=${id}`;
+  const sql_DecreseLikesCountPost = `UPDATE tbl_post  SET likesCount = likesCount-1 WHERE postId=${id}`;
+  const sql_DecreseLikesCountComment = `UPDATE tbl_comments  SET likesCount = likesCount-1 WHERE commentId=${id}`;
+  const sql_DecreseLikesCountReply = `UPDATE tbl_replies  SET likesCount = likesCount-1 WHERE replyId=${id}`;
+  switch (like) {
+    case false:
+      try {
+        const result_1 = await db.query(
+          origin === "post"
+            ? sql_LikePost
+            : origin === "comment"
+            ? sql_LikeComment
+            : origin === "reply" && sql_LikeReply
+        );
+        const result_2 = await db.query(
+          origin === "post"
+            ? sql_IncreaseLikesCountPost
+            : origin === "comment"
+            ? sql_IncreaseLikesCountComment
+            : origin === "reply" && sql_IncreaseLikesCountReply
+        );
+        if (result_1 && result_2) {
+          console.log("like result1", result_1, "like result2", result_2);
+          res.status(200).json({ liked: true });
+        }
+      } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: "Oops petit problème de réseau..." });
+      }
+      break;
+    case true:
+      try {
+        const result_1 = await db.query(
+          origin === "post"
+            ? sql_DislikePost
+            : origin === "comment"
+            ? sql_DislikeComment
+            : origin === "reply" && sql_DislikeReply
+        );
+        const result_2 = await db.query(
+          origin === "post"
+            ? sql_DecreseLikesCountPost
+            : origin === "comment"
+            ? sql_DecreseLikesCountComment
+            : origin === "reply" && sql_DecreseLikesCountReply
+        );
+        if (result_1 && result_2) {
+          console.log("dislike result1", result_1, "dislike result2", result_2);
+
+          res.status(200).json({ liked: false });
+        }
+      } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: "Oops petit problème de réseau..." });
+      }
+      break;
+    default:
+      return;
+  }
+};

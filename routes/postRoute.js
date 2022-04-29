@@ -23,7 +23,6 @@ postRouter.post("/comment", authorizeToken, postController.createComment);
 
 // LIKE
 postRouter.get("/like", postController.getLikes);
-postRouter.post("/like", authorizeToken, postController.likePost);
 
 // REPLY
 postRouter.get("/reply", authorizeToken, postController.getReplies);

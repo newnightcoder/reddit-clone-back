@@ -216,7 +216,6 @@ export const likePost = async (req, res, next) => {
         );
         if (result_1 && result_2) {
           console.log("dislike result1", result_1, "dislike result2", result_2);
-
           res.status(200).json({ liked: false });
         }
       } catch (err) {

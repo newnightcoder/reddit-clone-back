@@ -16,8 +16,6 @@ const metascraper = createMetascraper([
   metascraperTitleUrl(),
 ]);
 
-// const targetUrl = "https://www.youtube.com/watch?v=3HNyXCPDQ7Q";
-
 export const scrape = async (targetUrl) => {
   try {
     const { body: html, url } = await got(targetUrl, {
@@ -34,7 +32,6 @@ export const scrape = async (targetUrl) => {
       },
     });
     const metadata = await metascraper({ html, url });
-    // console.log(metadata);
     return metadata;
   } catch (error) {
     console.log(error);

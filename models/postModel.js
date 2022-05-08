@@ -60,7 +60,14 @@ export class Post {
     console.log(this.isPreview, this.preview);
     const sqlCreatePost =
       this.isPreview === 1
-        ? `INSERT INTO tbl_post (fk_userId_post, title, text, date, imgUrl, isPreview, previewTitle, previewText, previewImg, previewPub, previewUrl, previewPubLogo ) VALUES (${this.userId},"${this.title}", "${this.text}", "${this.date}","${this.imgUrl}","${this.isPreview}","${this.preview.title}","${this.preview.description}","${this.preview.image}","${this.preview.publisher}","${this.preview.url}","${this.preview.logo}")`
+        ? `INSERT INTO tbl_post (fk_userId_post, title, text, date, imgUrl, isPreview, previewTitle, previewText, previewImg, previewPub, previewUrl, previewPubLogo ) 
+        VALUES (${this.userId},"${this.title}", "${this.text}", 
+        "${this.date}","${this.imgUrl}","${this.isPreview}",
+        "${this.preview.title}","${this.preview.description}",
+        "${this.preview.image}",
+        "${this.preview.publisher !== null ? this.preview.publisher : ""}",
+        "${this.preview.url}",
+        "${this.preview.logo !== null ? this.preview.logo : ""}")`
         : `INSERT INTO tbl_post (fk_userId_post, title, text, date, imgUrl) VALUES (${this.userId},"${this.title}", "${this.text}", "${this.date}","${this.imgUrl}")`;
     try {
       const [res, _] = await db.execute(sqlCreatePost);

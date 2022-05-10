@@ -119,15 +119,15 @@ export const createPost = async (req, res, next) => {
 export const editPost = async (req, res, next) => {
   const { origin, id, title, text, imgUrl, isPreview, preview } = req.body;
   console.log(origin, id, title, text, imgUrl, isPreview, preview);
-  const sqlEditPost = `UPDATE tbl_post SET title = "${title}", text = "${text}", imgUrl="${imgUrl}", isPreview="${isPreview}", previewTitle=${
-    isPreview === 1 ? preview.title : null
-  }, previewText=${isPreview === 1 ? preview.description : null}, previewImg=${
-    isPreview === 1 ? preview.image : null
-  }, previewPub=${isPreview === 1 ? preview.publisher : null}, previewUrl=${
-    isPreview === 1 ? preview.url : null
-  }, previewPubLogo=${
-    isPreview === 1 ? preview.logo : null
-  }   WHERE postId=${id}`;
+  const sqlEditPost = `UPDATE tbl_post SET title = "${title}", text = "${text}", imgUrl="${imgUrl}", isPreview="${isPreview}", previewTitle="${
+    isPreview === 1 ? preview.title : ""
+  }", previewText="${
+    isPreview === 1 ? preview.description.substr(0, 100) : ""
+  }", previewImg="${isPreview === 1 ? preview.image : ""}", previewPub="${
+    isPreview === 1 && preview.publisher !== null ? preview.publisher : ""
+  }", previewUrl="${isPreview === 1 ? preview.url : ""}", previewPubLogo="${
+    isPreview === 1 && preview.logo !== null ? preview.logo : ""
+  }"   WHERE postId=${id}`;
   const sqlEditComment = `UPDATE tbl_comments SET text = "${text}" WHERE commentId=${id}`;
   const sqlEditReply = `UPDATE tbl_replies SET text = "${text}" WHERE replyId=${id}`;
   const errorDB = "Oops désolé, petit problème de post...";
@@ -245,8 +245,10 @@ export const getReplies = async (req, res, next) => {
 
 export const sendLinkData = async (req, res) => {
   const { targetUrl } = req.body;
-  const result = await scrape(targetUrl);
-  // console.log("result scrape", result);
-
+  let result = await scrape(targetUrl);
+  if (result.publisher.includes("/>")) {
+    result = { ...result, publisher: null };
+  }
+  console.log(result);
   res.status(200).json({ result });
 };

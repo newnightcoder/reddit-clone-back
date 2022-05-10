@@ -63,7 +63,7 @@ export class Post {
         ? `INSERT INTO tbl_post (fk_userId_post, title, text, date, imgUrl, isPreview, previewTitle, previewText, previewImg, previewPub, previewUrl, previewPubLogo ) 
         VALUES (${this.userId},"${this.title}", "${this.text}", 
         "${this.date}","${this.imgUrl}","${this.isPreview}",
-        "${this.preview.title}","${this.preview.description}",
+        "${this.preview.title}","${this.preview.description.substr(0, 100)}",
         "${this.preview.image}",
         "${this.preview.publisher !== null ? this.preview.publisher : ""}",
         "${this.preview.url}",

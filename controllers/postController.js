@@ -53,16 +53,35 @@ export const getUserPosts = async (req, res, next) => {
 };
 
 ///////////////////
-// GET ALL USERS
+// GET RECENT USERS
 ///////////////////
 
-export const getUsers = async (req, res, next) => {
+export const getRecentUsers = async (req, res, next) => {
   const sql_getAllUsers = `SELECT id, username, picUrl, creationDate,role FROM tbl_user`;
   try {
     const [users, _] = await db.execute(sql_getAllUsers);
     if (users) {
-      res.status(200).json({ users });
+      const recentUsers = users
+        .sort((a, b) => {
+          if (a.id < b.id) return 1;
+          if (a.id > b.id) return -1;
+          return 0;
+        })
+        .splice(0, 5);
+      console.log(recentUsers);
+      res.status(200).json({ recentUsers });
     }
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getMods = async (req, res, next) => {
+  const sql_getMods = `SELECT id, username, picUrl, creationDate, role FROM tbl_user WHERE role="admin";`;
+  try {
+    const [mods, _] = await db.execute(sql_getMods);
+    console.log(mods);
+    res.status(200).json({ mods });
   } catch (error) {
     throw error;
   }

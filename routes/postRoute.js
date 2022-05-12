@@ -6,7 +6,8 @@ import { upload } from "../middleware/multer.js";
 const postRouter = express.Router();
 
 // USER
-postRouter.get("/user", postController.getUsers);
+postRouter.get("/user", postController.getRecentUsers);
+postRouter.get("/mods", postController.getMods);
 postRouter.post("/user", authorizeToken, postController.getUserPosts);
 
 // POSTS

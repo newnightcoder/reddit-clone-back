@@ -15,20 +15,17 @@ export const logUser = async (req, res, next) => {
       email,
       password
     ).login();
-    if (error === "404") {
-      return res.status(404).json({ error: "404" });
-    } else if (error === "password") {
-      return res.status(500).json({ error });
-    } else if (error === "backend") {
-      return res.status(500).json({ error });
-    }
-    return res.status(200).json({ user, isNewUser: false, accessToken });
 
-    // if (bcrypt.compare(password, user.password)) {
-    //   const accessToken = createToken(user);
-    //   res.status(200).json({ user, isNewUser: false, accessToken });
-    //   next();
-    // } else res.status(500).json({ error: "password" });
+    switch (error) {
+      case "404":
+        return res.status(404).json({ error });
+      case "password":
+        return res.status(500).json({ error });
+      case "backend":
+        return res.status(404).json({ error });
+      default:
+        return res.status(200).json({ user, isNewUser: false, accessToken });
+    }
   } catch (error) {
     res.status(500).json({ error: "backend" });
   }

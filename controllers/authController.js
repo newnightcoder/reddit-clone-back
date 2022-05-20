@@ -9,21 +9,28 @@ import { User } from "../models/userModel.js";
 
 export const logUser = async (req, res, next) => {
   const { email, password } = req.body;
-  const errorBackend = "Oops! petit problème de notre part désolé";
-  const errorNotFound = "Aucun compte trouvé avec ces identifiants";
-  const errorPassword = "Votre mot de passe est incorrect";
   try {
-    const user = await new User(null, email).login();
-    if (user === undefined) {
-      return res.status(404).json({ error: errorNotFound });
+    const { user, accessToken, error } = await new User(
+      null,
+      email,
+      password
+    ).login();
+    if (error === "404") {
+      return res.status(404).json({ error: "404" });
+    } else if (error === "password") {
+      return res.status(500).json({ error });
+    } else if (error === "backend") {
+      return res.status(500).json({ error });
     }
-    if (bcrypt.compare(password, user.password)) {
-      const accessToken = createToken(user);
-      res.status(200).json({ user, isNewUser: false, accessToken });
-      next();
-    } else res.status(200).json({ error: errorPassword });
+    return res.status(200).json({ user, isNewUser: false, accessToken });
+
+    // if (bcrypt.compare(password, user.password)) {
+    //   const accessToken = createToken(user);
+    //   res.status(200).json({ user, isNewUser: false, accessToken });
+    //   next();
+    // } else res.status(500).json({ error: "password" });
   } catch (error) {
-    res.status(500).json({ error: errorBackend });
+    res.status(500).json({ error: "backend" });
   }
 };
 
@@ -35,8 +42,6 @@ export const createUser = async (req, res, next) => {
   const { email, password } = req.body;
   const salt = 10;
   const hash = bcrypt.hashSync(password, salt);
-  const errorBackend = "Oops! petit problème de notre part désolé";
-  const errorDuplicate = "Un compte associé à cet email existe déjà.";
   const user = new User(null, email, hash);
   try {
     const userId = await user.create();
@@ -44,9 +49,7 @@ export const createUser = async (req, res, next) => {
   } catch (error) {
     console.log(error);
     const { errno } = error;
-    res
-      .status(500)
-      .json({ error: errno === 1062 ? errorDuplicate : errorBackend });
+    res.status(500).json({ error: errno === 1062 ? "duplicate" : "backend" });
   }
 };
 
@@ -56,9 +59,6 @@ export const createUser = async (req, res, next) => {
 
 export const addUserName = async (req, res, next) => {
   const { id, username, creationDate } = req.body;
-  const errorBackend = "Oops! petit problème de notre part désolé";
-  const errorDuplicate =
-    "Ce nom d'utilisateur est déjà pris!\nVeuillez en choisir un autre.";
   const user = new User(id, null, null, username, null, null, creationDate);
   try {
     const result = await user.addUsername();
@@ -67,7 +67,7 @@ export const addUserName = async (req, res, next) => {
   } catch (error) {
     const { errno } = error;
     res.status(500).json({
-      error: errno === 1062 ? errorDuplicate : errorBackend,
+      error: errno === 1062 ? "duplicate" : "backend",
     });
   }
 };
@@ -79,7 +79,7 @@ export const addUserName = async (req, res, next) => {
 export const addUserPic = async (req, res, next) => {
   const fileLocation = req.file?.location;
   const { id, imgType } = req.body;
-  console.log("image fileLocation", fileLocation);
+  // console.log("image fileLocation", fileLocation);
   const user = new User(id);
 
   try {
@@ -99,9 +99,6 @@ export const editUsername = async (req, res, next) => {
   const { userId, username } = req.body;
   console.log(userId, username);
   const sql_EditUsername = `UPDATE tbl_user SET username="${username}" WHERE id=${userId}`;
-  const errorBackend = "Oops! petit problème de notre part désolé";
-  const errorDuplicate =
-    "Ce nom d'utilisateur est déjà pris!\nVeuillez en choisir un autre.";
   try {
     const result = await db.execute(sql_EditUsername);
     if (result) {
@@ -111,7 +108,7 @@ export const editUsername = async (req, res, next) => {
   } catch (error) {
     const { errno } = error;
     res.status(500).json({
-      error: errno === 1062 ? errorDuplicate : errorBackend,
+      error: errno === 1062 ? "duplicate" : "backend",
     });
   }
 };
@@ -195,7 +192,7 @@ export const likePost = async (req, res, next) => {
         }
       } catch (err) {
         console.log(err);
-        res.status(500).json({ error: "Oops petit problème de réseau..." });
+        res.status(500).json({ error: "backend" });
       }
       break;
     case true:

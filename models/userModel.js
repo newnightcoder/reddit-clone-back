@@ -1,4 +1,6 @@
+import bcrypt from "bcrypt";
 import { db } from "../DB/db.config.js";
+import { createToken } from "../middleware/jwt.js";
 
 export class User {
   constructor(
@@ -23,12 +25,27 @@ export class User {
 
   async login() {
     const sql_findUser = `SELECT * FROM tbl_user WHERE email = ?`;
+    console.log("password received", this.password);
+
     try {
       const [user, _metadata] = await db.execute(sql_findUser, [this.email]);
-      console.log("user from model", user[0]);
-      return user[0];
+      if (user.length !== 0) {
+        const match = await bcrypt.compare(this.password, user[0].password);
+        if (match) {
+          console.log("user from model", user[0]);
+          const accessToken = createToken(user[0]);
+          return { user: user[0], accessToken };
+        } else {
+          console.log("passwords dont match");
+          return { error: "password" };
+        }
+      } else {
+        console.log("user undefined");
+        return { error: "404" };
+      }
     } catch (error) {
-      throw error;
+      console.log(error);
+      return { error: "backend" };
     }
   }
 

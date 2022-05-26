@@ -32,6 +32,7 @@ export class Post {
       throw error;
     }
   }
+
   static async getUserPosts(userId) {
     const GET_USER_POSTS = `SELECT title, postId, text, date, imgUrl, fk_userId_post, username, picUrl, likesCount, commentCount, isPreview, previewTitle, previewText, previewImg, previewPub, previewUrl, previewPubLogo FROM tbl_post, tbl_user WHERE tbl_post.fk_userId_post="${userId}" AND tbl_user.id="${userId}"`;
     try {
@@ -57,7 +58,6 @@ export class Post {
   }
 
   async create() {
-    console.log(this.isPreview, this.preview);
     const sqlCreatePost =
       this.isPreview === 1
         ? `INSERT INTO tbl_post (fk_userId_post, title, text, date, imgUrl, isPreview, previewTitle, previewText, previewImg, previewPub, previewUrl, previewPubLogo ) 
@@ -69,10 +69,23 @@ export class Post {
         "${this.preview.url}",
         "${this.preview.logo !== null ? this.preview.logo : ""}")`
         : `INSERT INTO tbl_post (fk_userId_post, title, text, date, imgUrl) VALUES (${this.userId},"${this.title}", "${this.text}", "${this.date}","${this.imgUrl}")`;
+    const sqlGetPost = `SELECT * FROM tbl_post WHERE postId=?`;
+
     try {
       const [res, _] = await db.execute(sqlCreatePost);
       const { insertId } = res;
-      return insertId;
+      const post = await db.execute(sqlGetPost, [insertId]);
+      const userData = await db.execute(
+        `SELECT username, picUrl FROM tbl_user WHERE id=${post[0][0].fk_userId_post}`
+      );
+      const newPost = {
+        ...post[0][0],
+        username: userData[0][0].username,
+        picUrl: userData[0][0].picUrl,
+      };
+
+      console.log("NEW POST", newPost);
+      return newPost;
     } catch (error) {
       console.log(error);
     }

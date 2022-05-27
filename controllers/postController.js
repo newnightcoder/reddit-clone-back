@@ -277,10 +277,15 @@ export const getReplies = async (req, res, next) => {
 
 export const sendLinkData = async (req, res) => {
   const { targetUrl } = req.body;
-  let result = await scrape(targetUrl);
-  if (result.publisher?.includes("/>")) {
-    result = { ...result, publisher: null };
+
+  try {
+    let result = await scrape(targetUrl);
+    if (result.publisher?.includes("/>")) {
+      result = { ...result, publisher: null };
+    }
+    console.log(result);
+    res.status(200).json({ result });
+  } catch (error) {
+    res.status(500).json({ error: "backend" });
   }
-  console.log(result);
-  res.status(200).json({ result });
 };

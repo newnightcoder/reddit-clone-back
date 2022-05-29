@@ -146,7 +146,9 @@ export const editPost = async (req, res) => {
   const sqlEditPost = `UPDATE tbl_post SET title = "${title}", text = "${text}", imgUrl="${imgUrl}", isPreview="${isPreview}", previewTitle="${
     isPreview === 1 ? preview.title : ""
   }", previewText="${
-    isPreview === 1 ? preview.description.substr(0, 100) : ""
+    isPreview === 1 && preview.description !== null
+      ? preview.description.substr(0, 100)
+      : ""
   }", previewImg="${isPreview === 1 ? preview.image : ""}", previewPub="${
     isPreview === 1 && preview.publisher !== null ? preview.publisher : ""
   }", previewUrl="${isPreview === 1 ? preview.url : ""}", previewPubLogo="${
@@ -267,13 +269,17 @@ export const sendLinkData = async (req, res) => {
     let { article, error } = await scrape(targetUrl);
     if (error) return res.status(500).json({ error });
     if (article) {
-      if (article.publisher?.includes("/>")) {
+      console.log("SCRAPED ARTICLE:", article);
+      if (article.publisher?.includes(">")) {
         article = { ...article, publisher: null };
       }
-      console.log("SCRAPED ARTICLE:", article);
+      if (article.description?.includes(">")) {
+        article = { ...article, description: null };
+      }
       res.status(200).json({ article });
     }
   } catch (err) {
+    console.log("ERREUR SENDLINKDATA:", err);
     res.status(500).json({ error: "database" });
   }
 };

@@ -32,9 +32,10 @@ export const scrape = async (targetUrl) => {
       },
     });
     const metadata = await metascraper({ html, url });
-    return metadata;
-  } catch (error) {
-    console.log(error);
+    console.log("ARTICLE METADATA:", metadata);
+    return { article: metadata };
+  } catch (err) {
+    console.log(err);
     return { error: "scrape" };
   }
 };

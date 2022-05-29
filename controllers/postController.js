@@ -10,7 +10,7 @@ export const getPosts = async (req, res, next) => {
   try {
     const posts = await Post.getPosts();
     const likes = await Post.getLikes();
-    if (posts && likes) return res.status(200).json({ posts, likes });
+    if (posts && likes) res.status(200).json({ posts, likes });
   } catch (err) {
     res.status(500).json({ error: "database" });
   }

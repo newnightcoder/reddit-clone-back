@@ -10,10 +10,9 @@ export const getPosts = async (req, res, next) => {
   try {
     const posts = await Post.getPosts();
     const likes = await Post.getLikes();
-    res.status(200).json({ posts, likes });
-    // next();
-  } catch (error) {
-    console.log(error);
+    if (posts && likes) return res.status(200).json({ posts, likes });
+  } catch (err) {
+    res.status(500).json({ error: "database" });
   }
 };
 
@@ -26,11 +25,11 @@ export const getPostById = async (req, res, next) => {
   const sqlGetPostById = `SELECT * , (SELECT username FROM tbl_user WHERE id=tbl_post.fk_userId_post) as username FROM tbl_post WHERE postId=${id}`;
   try {
     const [post, _] = await db.execute(sqlGetPostById, [id]);
-    console.log("post from db", post[0]);
-    res.status(200).json({ currentPost: post[0] });
-  } catch (error) {
+    // console.log("post from db", post[0]);
+    if (post) return res.status(200).json({ currentPost: post[0] });
+  } catch (err) {
     console.log(error);
-    res.status(500).json({ error: "backend" });
+    res.status(500).json({ error: "database" });
   }
 };
 
@@ -38,13 +37,12 @@ export const getPostById = async (req, res, next) => {
 // GET ALL LIKES
 ///////////////////
 
-export const getLikes = async (req, res, next) => {
+export const getLikes = async (req, res) => {
   try {
     const likes = await Post.getLikes();
-    return res.status(200).json({ likes });
-    // next();
-  } catch (error) {
-    console.log(error);
+    if (likes) return res.status(200).json({ likes });
+  } catch (err) {
+    return res.status(500).json({ error: "database" });
   }
 };
 
@@ -57,13 +55,14 @@ export const getUserPosts = async (req, res, next) => {
   try {
     const posts = await Post.getUserPosts(userId);
     const likes = await Post.getLikes();
-    res.status(200).json({
-      posts,
-      likes,
-    });
+    if (posts && likes)
+      return res.status(200).json({
+        posts,
+        likes,
+      });
     next();
-  } catch (error) {
-    console.log(error);
+  } catch (err) {
+    return res.status(500).json({ error: "database" });
   }
 };
 
@@ -83,11 +82,10 @@ export const getRecentUsers = async (req, res, next) => {
           return 0;
         })
         .splice(0, 5);
-      // console.log(recentUsers);
       res.status(200).json({ recentUsers });
     }
-  } catch (error) {
-    throw error;
+  } catch (err) {
+    return res.status(500).json({ error: "database" });
   }
 };
 
@@ -95,10 +93,9 @@ export const getMods = async (req, res, next) => {
   const sql_getMods = `SELECT id, username, picUrl, creationDate, role FROM tbl_user WHERE role="admin";`;
   try {
     const [mods, _] = await db.execute(sql_getMods);
-    // console.log(mods);
-    res.status(200).json({ mods });
-  } catch (error) {
-    throw error;
+    if (mods) return res.status(200).json({ mods });
+  } catch (err) {
+    return res.status(500).json({ error: "database" });
   }
 };
 
@@ -106,22 +103,19 @@ export const getMods = async (req, res, next) => {
 //  SAVE POST IMG
 ///////////////////
 
-export const savePostImg = (req, res, next) => {
+export const savePostImg = (req, res) => {
   const fileLocation = req.file.location;
-  const errorServer = "Oops désolé, petit problème de post...";
-  console.log("fileLocation", fileLocation);
   try {
-    res.status(201).json({ imgUrl: fileLocation });
-    next();
+    if (fileLocation) return res.status(201).json({ imgUrl: fileLocation });
   } catch (err) {
-    res.status(500).json({ error: errorServer });
+    res.status(500).json({ error: "database" });
   }
 };
 ///////////////////
 //  CREATE POST
 ///////////////////
 
-export const createPost = async (req, res, next) => {
+export const createPost = async (req, res) => {
   const { userId, title, text, date, imgUrl, isPreview, preview } = req.body;
   const post = new Post(
     null,
@@ -134,13 +128,11 @@ export const createPost = async (req, res, next) => {
     isPreview,
     preview
   );
-  const errorDB = "Oops désolé, petit problème de post...";
   try {
     const newPost = await post.create();
-    res.status(201).json({ newPost });
-    next();
+    if (newPost) return res.status(201).json({ newPost });
   } catch (err) {
-    res.status(500).json({ error: errorDB });
+    res.status(500).json({ error: "database" });
   }
 };
 
@@ -148,7 +140,7 @@ export const createPost = async (req, res, next) => {
 //  EDIT POST
 ///////////////////
 
-export const editPost = async (req, res, next) => {
+export const editPost = async (req, res) => {
   const { origin, id, title, text, imgUrl, isPreview, preview } = req.body;
   console.log(origin, id, title, text, imgUrl, isPreview, preview);
   const sqlEditPost = `UPDATE tbl_post SET title = "${title}", text = "${text}", imgUrl="${imgUrl}", isPreview="${isPreview}", previewTitle="${
@@ -162,9 +154,8 @@ export const editPost = async (req, res, next) => {
   }"   WHERE postId=${id}`;
   const sqlEditComment = `UPDATE tbl_comments SET text = "${text}" WHERE commentId=${id}`;
   const sqlEditReply = `UPDATE tbl_replies SET text = "${text}" WHERE replyId=${id}`;
-  const errorDB = "Oops désolé, petit problème de post...";
   try {
-    const [res, _] = await db.execute(
+    const [edit, _] = await db.execute(
       origin === "post"
         ? sqlEditPost
         : origin === "comment"
@@ -173,10 +164,11 @@ export const editPost = async (req, res, next) => {
         ? sqlEditReply
         : null
     );
-    console.log("edit result", res);
-  } catch (error) {
+    console.log("EDITED POST:", edit);
+    if (edit) res.status(200).json({});
+  } catch (err) {
     console.log(error);
-    res.status(500).json({ error: errorDB });
+    res.status(500).json({ error: "database" });
   }
 };
 
@@ -201,13 +193,9 @@ export const deletePost = async (req, res, next) => {
         ? sql_deleteComment
         : origin === "reply" && sql_deleteReply
     );
-    if (result) {
-      return res
-        .status(200)
-        .json({ error: "oops petit problème lors de la suppression du post" });
-    }
-  } catch (error) {
-    console.log(error);
+    if (result) return res.status(200);
+  } catch (err) {
+    return res.status(500).json({ error: "database" });
   }
 };
 
@@ -221,25 +209,25 @@ export const createComment = async (req, res) => {
   const sql_increaseCommentCount = `UPDATE tbl_post SET commentCount = commentCount+1 WHERE postId=${postId}`;
   const sql_getCommentCount = `SELECT commentCount FROM tbl_post WHERE postId = ${postId} `;
   try {
-    await db.execute(sql_createComment);
+    const comment = await db.execute(sql_createComment);
     const updatedCount = await db.execute(sql_increaseCommentCount);
-    if (updatedCount) {
+    if (comment && updatedCount) {
       const [count, _] = await db.execute(sql_getCommentCount);
       console.log(count[0].commentCount);
       res.status(201).json({ count: count[0].commentCount });
     }
-  } catch (error) {
-    throw error;
+  } catch (err) {
+    return res.status(500).json({ error: "database" });
   }
 };
 
-export const getComments = async (req, res, next) => {
+export const getComments = async (req, res) => {
   const sql_getComments = `SELECT commentId, fk_postId_comment, fk_userId_comment, text, date, likesCount, username, picUrl FROM tbl_comments, tbl_user WHERE tbl_comments.fk_userId_comment=tbl_user.id`;
   try {
     const [comments, _] = await db.execute(sql_getComments);
-    return res.status(200).json({ comments });
+    if (comments) return res.status(200).json({ comments });
   } catch (err) {
-    throw err;
+    return res.status(500).json({ error: "database" });
   }
 };
 
@@ -253,21 +241,19 @@ export const createReply = async (req, res, next) => {
 
   try {
     const result = await db.execute(sql_createReply);
-    console.log(result);
-    res.status(201);
-  } catch (error) {
-    throw error;
+    if (result) return res.status(201);
+  } catch (err) {
+    res.status(500).json({ error: "database" });
   }
 };
 
-export const getReplies = async (req, res, next) => {
+export const getReplies = async (req, res) => {
   const sql_getReplies = `SELECT replyId, fk_commentId, fk_userId_reply, text, date, likesCount, username, picUrl FROM tbl_replies, tbl_user WHERE tbl_replies.fk_userId_reply=tbl_user.id`;
   try {
     const [replies, _] = await db.execute(sql_getReplies);
-    // console.log(replies);
-    return res.status(200).json({ replies });
-  } catch (error) {
-    throw error;
+    if (replies) return res.status(200).json({ replies });
+  } catch (err) {
+    return res.status(500).json({ error: "database" });
   }
 };
 
@@ -277,15 +263,17 @@ export const getReplies = async (req, res, next) => {
 
 export const sendLinkData = async (req, res) => {
   const { targetUrl } = req.body;
-
   try {
-    let result = await scrape(targetUrl);
-    if (result.publisher?.includes("/>")) {
-      result = { ...result, publisher: null };
+    let { article, error } = await scrape(targetUrl);
+    if (error) return res.status(500).json({ error });
+    if (article) {
+      if (article.publisher?.includes("/>")) {
+        article = { ...article, publisher: null };
+      }
+      console.log("SCRAPED ARTICLE:", article);
+      res.status(200).json({ article });
     }
-    console.log(result);
-    res.status(200).json({ result });
-  } catch (error) {
-    res.status(500).json({ error: "backend" });
+  } catch (err) {
+    res.status(500).json({ error: "database" });
   }
 };

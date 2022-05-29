@@ -21,13 +21,13 @@ export const logUser = async (req, res, next) => {
         return res.status(404).json({ error });
       case "password":
         return res.status(500).json({ error });
-      case "backend":
-        return res.status(404).json({ error });
+      case "database":
+        return res.status(500).json({ error });
       default:
         return res.status(200).json({ user, isNewUser: false, accessToken });
     }
-  } catch (error) {
-    res.status(500).json({ error: "backend" });
+  } catch (err) {
+    res.status(500).json({ error: "database" });
   }
 };
 
@@ -43,10 +43,11 @@ export const createUser = async (req, res, next) => {
   try {
     const userId = await user.create();
     res.status(201).json({ userId });
-  } catch (error) {
-    console.log(error);
-    const { errno } = error;
-    res.status(500).json({ error: errno === 1062 ? "duplicate" : "backend" });
+  } catch (err) {
+    const { errno } = err;
+    res
+      .status(500)
+      .json({ error: errno === 1062 ? "duplicateEmail" : "database" });
   }
 };
 
@@ -61,10 +62,10 @@ export const addUserName = async (req, res, next) => {
     const result = await user.addUsername();
     const accessToken = createToken(id);
     res.status(200).json({ result, accessToken, isNewUser: true });
-  } catch (error) {
-    const { errno } = error;
+  } catch (err) {
+    const { errno } = err;
     res.status(500).json({
-      error: errno === 1062 ? "duplicate" : "backend",
+      error: errno === 1062 ? "duplicateUsername" : "database",
     });
   }
 };
@@ -82,9 +83,8 @@ export const addUserPic = async (req, res, next) => {
   try {
     const picUrl = await user.addAvatarImg(fileLocation, imgType);
     res.status(200).json({ picUrl });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: error.message });
+  } catch (err) {
+    res.status(500).json({ error: "database" });
   }
 };
 
@@ -102,10 +102,10 @@ export const editUsername = async (req, res, next) => {
       console.log(result);
       res.status(200).json({ newName: username });
     }
-  } catch (error) {
-    const { errno } = error;
+  } catch (err) {
+    const { errno } = err;
     res.status(500).json({
-      error: errno === 1062 ? "duplicate" : "backend",
+      error: errno === 1062 ? "duplicateUsername" : "database",
     });
   }
 };
@@ -124,8 +124,8 @@ export const getUserProfile = async (req, res, next) => {
       res.status(200).json({ user: user[0] });
       next();
     }
-  } catch (error) {
-    throw error;
+  } catch (err) {
+    res.status(500).json({ error: "database" });
   }
 };
 
@@ -138,10 +138,9 @@ export const deleteUser = async (req, res, next) => {
   const user = new User(id, null, null, null, null, null);
   try {
     const deleted = await user.delete();
-    console.log("deleted result", deleted);
-    res.status(200);
-  } catch (error) {
-    throw error;
+    if (deleted) return res.status(200);
+  } catch (err) {
+    res.status(500).json({ error: "database" });
   }
 };
 
@@ -184,12 +183,11 @@ export const likePost = async (req, res, next) => {
             : origin === "reply" && sql_IncreaseLikesCountReply
         );
         if (result_1 && result_2) {
-          console.log("like result1", result_1, "like result2", result_2);
           res.status(200).json({ liked: true });
         }
       } catch (err) {
         console.log(err);
-        res.status(500).json({ error: "backend" });
+        res.status(500).json({ error: "database" });
       }
       break;
     case true:
@@ -209,12 +207,11 @@ export const likePost = async (req, res, next) => {
             : origin === "reply" && sql_DecreseLikesCountReply
         );
         if (result_1 && result_2) {
-          console.log("dislike result1", result_1, "dislike result2", result_2);
           res.status(200).json({ liked: false });
         }
       } catch (err) {
         console.log(err);
-        res.status(500).json({ error: "Oops petit problème de réseau..." });
+        res.status(500).json({ error: "database" });
       }
       break;
     default:

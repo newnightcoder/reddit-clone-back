@@ -15,24 +15,21 @@ export const authorizeToken = (req, res, next) => {
     const token = authHeaders?.split(" ")[1];
 
     if (!token) {
-      return res
-        .status(401)
-        .json({ message: "pas de token, désolé c'est mort" });
+      return res.status(401).json({ error: "noAuthToken" });
     }
 
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
       if (err) {
         if (err.name === "TokenExpiredError") {
           return res.status(403).json({
-            message: "Votre session a expiré! \n Veuillez vous reconnecter.",
             sessionExpired: true,
           });
-        } else return res.status(403).json({ message: "nope sorry!" });
+        } else return res.status(403).json({ error: "tokenVerifyError" });
       }
       req.user = user;
       next();
     });
   } catch (error) {
-    res.status(401).json({ message: "c'est mort" });
+    res.status(500).json({ error: "authTokenError" });
   }
 };

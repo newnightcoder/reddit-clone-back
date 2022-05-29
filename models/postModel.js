@@ -24,7 +24,7 @@ export class Post {
   }
 
   static async getPosts() {
-    const sqlGetPost = `SELECT title, postId, text, date, imgUrl, fk_userId_post, username, picUrl, likesCount, commentCount, isPreview, previewTitle, previewText, previewImg, previewPub, previewUrl, previewPubLogo FROM tbl_post, tbl_user WHERE tbl_post.fk_userId_post=tbl_user.id`;
+    const sqlGetPost = `SELEC title, postId, text, date, imgUrl, fk_userId_post, username, picUrl, likesCount, commentCount, isPreview, previewTitle, previewText, previewImg, previewPub, previewUrl, previewPubLogo FROM tbl_post, tbl_user WHERE tbl_post.fk_userId_post=tbl_user.id`;
     try {
       const [posts, _] = await db.execute(sqlGetPost);
       return posts;
@@ -88,6 +88,7 @@ export class Post {
       return newPost;
     } catch (error) {
       console.log(error);
+      throw error;
     }
   }
 }

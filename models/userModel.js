@@ -36,16 +36,13 @@ export class User {
           const accessToken = createToken(user[0]);
           return { user: user[0], accessToken };
         } else {
-          console.log("passwords dont match");
           return { error: "password" };
         }
       } else {
-        console.log("user undefined");
         return { error: "404" };
       }
     } catch (error) {
-      console.log(error);
-      return { error: "backend" };
+      return { error: "database" };
     }
   }
 
@@ -97,7 +94,6 @@ export class User {
   }
 
   async addAvatarImg(fileLocation, imgType) {
-    // const imgUrlHost = "https://social-media-sql-backend.herokuapp.com";
     const sqlAdd_avatarImg = `UPDATE tbl_user
     SET picUrl = "${fileLocation}" WHERE id=?`;
     const sqlGet_avatarImg = `SELECT picUrl FROM tbl_user WHERE id = ?`;

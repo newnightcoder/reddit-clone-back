@@ -35,5 +35,6 @@ export const scrape = async (targetUrl) => {
     return metadata;
   } catch (error) {
     console.log(error);
+    return { error: "scrape" };
   }
 };

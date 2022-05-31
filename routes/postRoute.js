@@ -5,15 +5,11 @@ import { upload } from "../middleware/multer.js";
 
 const postRouter = express.Router();
 
-// USER
-postRouter.get("/user", postController.getRecentUsers);
-postRouter.get("/mods", postController.getMods);
-postRouter.post("/user", authorizeToken, postController.getUserPosts);
-
 // POSTS
 
 postRouter.get("/", postController.getPosts);
 postRouter.get("/id/:id", authorizeToken, postController.getPostById);
+postRouter.post("/user", authorizeToken, postController.getUserPosts);
 postRouter.post("/post-image", upload, postController.savePostImg);
 postRouter.post("/post-link", postController.sendLinkData);
 postRouter.post("/", authorizeToken, postController.createPost);

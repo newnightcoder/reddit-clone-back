@@ -58,6 +58,7 @@ export class User {
       throw error;
     }
   }
+
   async delete() {
     const sql_deleteUser = `DELETE FROM tbl_user WHERE id=${this.id}`;
     try {

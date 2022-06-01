@@ -21,9 +21,7 @@ export const authorizeToken = (req, res, next) => {
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
       if (err) {
         if (err.name === "TokenExpiredError") {
-          return res.status(403).json({
-            sessionExpired: true,
-          });
+          return res.status(403).json({ sessionExpired: true });
         } else return res.status(403).json({ error: "tokenVerifyError" });
       }
       req.user = user;

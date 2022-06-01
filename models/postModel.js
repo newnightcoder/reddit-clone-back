@@ -27,7 +27,7 @@ export class Post {
     const sqlGetPost = `SELECT title, postId, text, date, imgUrl, fk_userId_post, username, picUrl, likesCount, commentCount, isPreview, previewTitle, previewText, previewImg, previewPub, previewUrl, previewPubLogo FROM tbl_post, tbl_user WHERE tbl_post.fk_userId_post=tbl_user.id`;
     try {
       const [posts, _] = await db.execute(sqlGetPost);
-      return posts;
+      if (posts) return posts;
     } catch (error) {
       throw error;
     }
@@ -51,7 +51,7 @@ export class Post {
     const GET_LIKES = "SELECT * FROM tbl_like";
     try {
       const [likes, _] = await db.execute(GET_LIKES);
-      return likes;
+      if (likes) return likes;
     } catch (error) {
       throw error;
     }

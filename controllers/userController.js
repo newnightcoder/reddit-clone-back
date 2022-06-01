@@ -77,12 +77,11 @@ export const addUserName = async (req, res, next) => {
 export const addUserPic = async (req, res, next) => {
   const fileLocation = req.file?.location;
   const { id, imgType } = req.body;
-  // console.log("image fileLocation", fileLocation);
   const user = new User(id);
 
   try {
     const picUrl = await user.addAvatarImg(fileLocation, imgType);
-    res.status(200).json({ picUrl });
+    if (picUrl) res.status(200).json({ picUrl });
   } catch (err) {
     res.status(500).json({ error: "database" });
   }
@@ -151,16 +150,12 @@ export const getMods = async (req, res, next) => {
 // GET SOME USER PROFILE
 /////////////////////////////////////
 
-export const getUserProfile = async (req, res, next) => {
+export const getUserProfile = async (req, res) => {
   const id = req.body.id;
   const sql_getUserProfile = `SELECT id, username, picUrl, bannerUrl, creationDate FROM tbl_user WHERE id=?`;
   try {
     const [user, _] = await db.execute(sql_getUserProfile, [id]);
-    if (user) {
-      console.log("user profile", user[0]);
-      res.status(200).json({ user: user[0] });
-      next();
-    }
+    if (user) return res.status(200).json({ user: user[0] });
   } catch (err) {
     res.status(500).json({ error: "database" });
   }

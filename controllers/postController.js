@@ -50,7 +50,7 @@ export const getLikes = async (req, res) => {
 // GET ALL POSTS FROM A USER
 /////////////////////////////
 
-export const getUserPosts = async (req, res, next) => {
+export const getUserPosts = async (req, res) => {
   const { userId } = req.body;
   try {
     const posts = await Post.getUserPosts(userId);
@@ -60,7 +60,6 @@ export const getUserPosts = async (req, res, next) => {
         posts,
         likes,
       });
-    next();
   } catch (err) {
     return res.status(500).json({ error: "database" });
   }
@@ -205,12 +204,14 @@ export const getComments = async (req, res) => {
 ////////////////////
 
 export const createReply = async (req, res, next) => {
-  const { commentId, userId, text, date } = req.body;
+  const { userId, commentId, text, date } = req.body;
   const sql_createReply = `INSERT INTO tbl_replies (fk_commentId, fk_userId_reply, text, date) VALUES (${commentId},${userId},"${text}","${date}")`;
-
   try {
     const result = await db.execute(sql_createReply);
-    if (result) return res.status(201);
+    if (result) {
+      console.log("RESULT CREATE REPLY:", result);
+      res.status(201).json({ replyId: result[0].insertId });
+    }
   } catch (err) {
     res.status(500).json({ error: "database" });
   }

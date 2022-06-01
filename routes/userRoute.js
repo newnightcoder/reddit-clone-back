@@ -17,8 +17,8 @@ userRoute.post("/edit", authorizeToken, userController.editUsername);
 
 // PIC / PROFILE
 userRoute.post("/userpic", upload, userController.addUserPic);
-userRoute.post("/", userController.getUserProfile);
-userRoute.post("/delete", userController.deleteUser);
+userRoute.post("/", authorizeToken, userController.getUserProfile);
+userRoute.post("/delete", authorizeToken, userController.deleteUser);
 
 // RECENT USERS & MODS
 userRoute.get("/user", userController.getRecentUsers);

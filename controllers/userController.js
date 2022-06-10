@@ -65,7 +65,12 @@ export const addUserName = async (req, res, next) => {
   } catch (err) {
     const { errno } = err;
     res.status(500).json({
-      error: errno === 1062 ? "duplicateUsername" : "database",
+      error:
+        errno === 1062
+          ? "duplicateUsername"
+          : errno === 1406
+          ? "nameTooLong"
+          : "database",
     });
   }
 };
@@ -102,9 +107,15 @@ export const editUsername = async (req, res, next) => {
       res.status(200).json({ newName: username });
     }
   } catch (err) {
+    console.log("ERROR", err, "ERROR MSG", err.message);
     const { errno } = err;
     res.status(500).json({
-      error: errno === 1062 ? "duplicateUsername" : "database",
+      error:
+        errno === 1062
+          ? "duplicateUsername"
+          : errno === 1406
+          ? "nameTooLong"
+          : "database",
     });
   }
 };
@@ -151,11 +162,14 @@ export const getMods = async (req, res, next) => {
 /////////////////////////////////////
 
 export const getUserProfile = async (req, res) => {
-  const id = req.body.id;
+  const { id } = req.body;
   const sql_getUserProfile = `SELECT id, username, picUrl, bannerUrl, creationDate FROM tbl_user WHERE id=?`;
   try {
     const [user, _] = await db.execute(sql_getUserProfile, [id]);
-    if (user) return res.status(200).json({ user: user[0] });
+    if (user) {
+      console.log("USER FROM DB", user);
+      return res.status(200).json({ user: user[0] });
+    }
   } catch (err) {
     res.status(500).json({ error: "database" });
   }

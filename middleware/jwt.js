@@ -15,19 +15,25 @@ export const authorizeToken = (req, res, next) => {
     const token = authHeaders?.split(" ")[1];
 
     if (!token) {
+      console.log("NO AUTH TOKEN");
       return res.status(401).json({ error: "noAuthToken" });
     }
 
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
       if (err) {
         if (err.name === "TokenExpiredError") {
+          console.log("EXPIRED");
           return res.status(403).json({ sessionExpired: true });
-        } else return res.status(403).json({ error: "tokenVerifyError" });
+        } else {
+          console.log("tokenVerifyError");
+          return res.status(403).json({ error: "tokenVerifyError" });
+        }
       }
       req.user = user;
       next();
     });
   } catch (error) {
+    console.log("authTokenError");
     res.status(500).json({ error: "authTokenError" });
   }
 };

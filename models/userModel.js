@@ -25,7 +25,6 @@ export class User {
 
   async login() {
     const sql_findUser = `SELECT * FROM tbl_user WHERE email = ?`;
-    console.log("password received", this.password);
 
     try {
       const [user, _metadata] = await db.execute(sql_findUser, [this.email]);
@@ -47,11 +46,12 @@ export class User {
   }
 
   async create() {
-    const sql_createUser = `INSERT INTO tbl_user (email, password) VALUES (?, ?)`;
+    const sql_createUser = `INSERT INTO tbl_user (email, password, creationDate) VALUES (?, ?, ?)`;
     try {
       const [user, _] = await db.execute(sql_createUser, [
         this.email,
         this.password,
+        this.creationDate,
       ]);
       return user.insertId;
     } catch (error) {
@@ -71,16 +71,13 @@ export class User {
 
   async addUsername() {
     const sql_addUserName = `
-    UPDATE tbl_user 
-    SET username =?, creationDate=?
-    WHERE id = ?
+    UPDATE tbl_user  SET username = ?  WHERE id = ?
     `;
     const sql_getUser = `SELECT username, email, creationDate FROM tbl_user WHERE id=? `;
     const connection = await db.getConnection();
     try {
       const res = await connection.execute(sql_addUserName, [
         this.username,
-        this.creationDate,
         this.id,
       ]);
       if (res) {

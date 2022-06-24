@@ -36,14 +36,16 @@ export const logUser = async (req, res, next) => {
 /////////////////////////////
 
 export const createUser = async (req, res, next) => {
-  const { email, password } = req.body;
+  const { email, password, date } = req.body;
   const salt = 10;
   const hash = bcrypt.hashSync(password, salt);
-  const user = new User(null, email, hash);
+  const user = new User(null, email, hash, null, null, null, date, null);
+  console.log("DATE", date);
   try {
     const userId = await user.create();
     res.status(201).json({ userId });
   } catch (err) {
+    console.log(err);
     const { errno } = err;
     res
       .status(500)
@@ -56,8 +58,8 @@ export const createUser = async (req, res, next) => {
 //////////////////////////////////////
 
 export const addUserName = async (req, res, next) => {
-  const { id, username, creationDate } = req.body;
-  const user = new User(id, null, null, username, null, null, creationDate);
+  const { id, username } = req.body;
+  const user = new User(id, null, null, username, null, null, null);
   try {
     const result = await user.addUsername();
     const accessToken = createToken(id);
@@ -125,7 +127,7 @@ export const editUsername = async (req, res, next) => {
 ///////////////////
 
 export const getRecentUsers = async (req, res, next) => {
-  const sql_getAllUsers = `SELECT id, username, picUrl, creationDate,role FROM tbl_user`;
+  const sql_getAllUsers = `SELECT id, username, picUrl, bannerUrl, creationDate, role FROM tbl_user`;
   try {
     const [users, _] = await db.execute(sql_getAllUsers);
     if (users) {
@@ -139,6 +141,7 @@ export const getRecentUsers = async (req, res, next) => {
       res.status(200).json({ recentUsers });
     }
   } catch (err) {
+    console.log(err);
     return res.status(500).json({ error: "database" });
   }
 };

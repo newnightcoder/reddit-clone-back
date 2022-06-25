@@ -22,7 +22,7 @@ export const getPosts = async (req, res, next) => {
 export const getPostById = async (req, res, next) => {
   console.log("REQ received for post by id");
   const { id } = req.params;
-  const sqlGetPostById = `SELECT * , (SELECT username FROM tbl_user WHERE id=tbl_post.fk_userId_post) as username FROM tbl_post WHERE postId=${id}`;
+  const sqlGetPostById = `SELECT * , (SELECT username FROM tbl_user WHERE id=tbl_post.fk_userId_post) as username FROM tbl_post WHERE postId=?`;
   try {
     const [post, _] = await db.execute(sqlGetPostById, [id]);
     // console.log("post from db", post[0]);

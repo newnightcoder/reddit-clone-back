@@ -3,24 +3,12 @@ import { db } from "../DB/db.config.js";
 import { createToken } from "../middleware/jwt.js";
 
 export class User {
-  constructor(
-    id,
-    email,
-    password,
-    username,
-    avatarImg,
-    bannerImg,
-    creationDate,
-    role
-  ) {
+  constructor(id, email, password, username, creationDate) {
     this.id = id;
     this.email = email;
     this.password = password;
-    this.username = username;
-    this.avatarImg = avatarImg;
-    this.bannerImg = bannerImg;
     this.creationDate = creationDate;
-    this.role = role;
+    this.username = username;
   }
 
   async login() {

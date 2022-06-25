@@ -27,4 +27,8 @@ userRoute.get("/mods", userController.getMods);
 // LIKE
 userRoute.post("/like", authorizeToken, userController.likePost);
 
+// FOLLOWERS
+userRoute.get("/follow/:id", authorizeToken, userController.getFollowers);
+userRoute.post("/follow", authorizeToken, userController.follow);
+
 export default userRoute;

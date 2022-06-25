@@ -39,7 +39,7 @@ export const createUser = async (req, res, next) => {
   const { email, password, date } = req.body;
   const salt = 10;
   const hash = bcrypt.hashSync(password, salt);
-  const user = new User(null, email, hash, null, null, null, date, null);
+  const user = new User(null, email, hash, date);
   console.log("DATE", date);
   try {
     const userId = await user.create();
@@ -59,7 +59,7 @@ export const createUser = async (req, res, next) => {
 
 export const addUserName = async (req, res, next) => {
   const { id, username } = req.body;
-  const user = new User(id, null, null, username, null, null, null);
+  const user = new User(id, null, null, null, username);
   try {
     const result = await user.addUsername();
     const accessToken = createToken(id);
@@ -166,11 +166,10 @@ export const getMods = async (req, res, next) => {
 
 export const getUserProfile = async (req, res) => {
   const { id } = req.body;
-  const sql_getUserProfile = `SELECT id, username, picUrl, bannerUrl, creationDate FROM tbl_user WHERE id=?`;
+  const sql_getUserProfile = `SELECT id, username, picUrl, bannerUrl, creationDate, followingCount, followersCount FROM tbl_user WHERE id=?`;
   try {
     const [user, _] = await db.execute(sql_getUserProfile, [id]);
     if (user) {
-      console.log("USER FROM DB", user);
       return res.status(200).json({ user: user[0] });
     }
   } catch (err) {
@@ -184,7 +183,7 @@ export const getUserProfile = async (req, res) => {
 
 export const deleteUser = async (req, res, next) => {
   const { id } = req.body;
-  const user = new User(id, null, null, null, null, null);
+  const user = new User(id);
   try {
     const deleted = await user.delete();
     if (deleted) return res.status(200);
@@ -265,5 +264,76 @@ export const likePost = async (req, res, next) => {
       break;
     default:
       return;
+  }
+};
+
+////////////////////
+//  FOLLOW / UNFOLLOW
+////////////////////
+
+export const follow = async (req, res) => {
+  const { myId, userId, bool, date } = req.body;
+  const sql_follow = `INSERT INTO tbl_follow (fk_userId_followed, fk_userId_following,date) VALUES ((SELECT id FROM tbl_user WHERE id=?),(SELECT id FROM tbl_user WHERE id=?), ?)`;
+  const sql_unfollow = `DELETE FROM tbl_follow WHERE fk_userId_followed = ? AND fk_userId_following = ?`;
+  const sql_increaseFollowingCount = `UPDATE tbl_user SET followingCount=followingCount+1 WHERE id=?`;
+  const sql_decreaseFollowingCount = `UPDATE tbl_user SET followingCount=followingCount-1 WHERE id=?`;
+  const sql_increaseFollowersCount = `UPDATE tbl_user SET followersCount=followersCount+1 WHERE id=?`;
+  const sql_decreaseFollowersCount = `UPDATE tbl_user SET followersCount=followersCount-1 WHERE id=?`;
+
+  try {
+    switch (bool) {
+      case true:
+        const res1 = await db.execute(sql_follow, [userId, myId, date]);
+        const res2 = await db.execute(sql_increaseFollowingCount, [myId]);
+        const res3 = await db.execute(sql_increaseFollowersCount, [userId]);
+        if (res1 && res2 && res3)
+          console.log(
+            "YAY",
+            "RES FOLLOW",
+            res1,
+            "RES INCREASE FOLLOWING COUNT",
+            res2,
+            "RES INCREASE FOLLOWERS COUNT",
+            res3
+          );
+        return res.send({ msg: "db updated follow" });
+      case false:
+        const res4 = await db.execute(sql_unfollow, [myId, userId]);
+        const res5 = await db.execute(sql_decreaseFollowingCount, [myId]);
+        const res6 = await db.execute(sql_decreaseFollowersCount, [userId]);
+        if (res4 && res5 && res6)
+          console.log(
+            "YAY",
+            "RES UNFOLLOW",
+            res1,
+            "RES DECREASE FOLLOWING COUNT",
+            res2,
+            "RES DECREASE FOLLOWERS COUNT",
+            res3
+          );
+        res.send({ msg: "db updated follow" });
+      default:
+    }
+  } catch (error) {
+    res.status(500).json({ error: "database" });
+  }
+};
+
+//////////////////////////////
+//  GET FOLLOWING / FOLLOWERS
+//////////////////////////////
+
+export const getFollowers = async (req, res) => {
+  const { id } = req.params;
+  const sql_getFollowers = `SELECT id, (SELECT username FROM tbl_user WHERE id=fk_userId_following) as username, (SELECT picUrl FROM tbl_user WHERE id=fk_userId_following) as picUrl  FROM tbl_follow WHERE tbl_follow.fk_userId_followed=? `;
+  try {
+    const [response, _] = await db.execute(sql_getFollowers, [id]);
+
+    if (response) {
+      console.log("FOLLOWERS LIST", response);
+      return res.status(200).json({ response });
+    }
+  } catch (error) {
+    console.log(error);
   }
 };

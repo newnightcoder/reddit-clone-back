@@ -122,20 +122,33 @@ export const editPost = async (req, res) => {
   }"   WHERE postId=${id}`;
   const sqlEditComment = `UPDATE tbl_comments SET text = "${text}" WHERE commentId=${id}`;
   const sqlEditReply = `UPDATE tbl_replies SET text = "${text}" WHERE replyId=${id}`;
+
+  const sqlGetEditedPost = `SELECT title, text, date, imgUrl, isPreview, previewTitle, previewText, previewImg, previewPub, previewUrl, previewPubLogo FROM tbl_post WHERE postId=?`;
+  const sqlGetEditedComment = `SELECT text FROM tbl_comments WHERE commentId=?`;
+  const sqlGetEditedReply = `SELECT text FROM tbl_replies WHERE replyId=?`;
+
   try {
-    const [edit, _] = await db.execute(
-      origin === "post"
-        ? sqlEditPost
-        : origin === "comment"
-        ? sqlEditComment
-        : origin === "reply"
-        ? sqlEditReply
-        : null
-    );
-    console.log("EDITED POST:", edit);
-    if (edit) res.status(200).json({});
+    switch (origin) {
+      case "post": {
+        const res0 = await db.execute(sqlEditPost);
+        const [edit, _] = await db.execute(sqlGetEditedPost, [id]);
+        if (res0 && edit) return res.status(200).json({ edit: edit[0] });
+      }
+
+      case "comment": {
+        const res2 = await db.execute(sqlEditComment);
+        const [edit, _] = await db.execute(sqlGetEditedComment, [id]);
+        if (res2 && edit) return res.status(200).json({ edit: edit[0] });
+      }
+      case "reply": {
+        const res4 = await db.execute(sqlEditReply);
+        const [edit, _] = await db.execute(sqlGetEditedReply, [id]);
+        if (res4 && edit) return res.status(200).json({ edit: edit[0] });
+      }
+      default:
+    }
   } catch (err) {
-    console.log(error);
+    console.log(err);
     res.status(500).json({ error: "database" });
   }
 };
@@ -151,17 +164,20 @@ export const deletePost = async (req, res, next) => {
   const sql_decreaseCommentCount = `UPDATE tbl_post SET commentCount= commentCount-1 WHERE postId=${postIdComment}`;
   const sql_deleteReply = `DELETE FROM tbl_replies WHERE replyId=${postId}`;
   try {
-    if (origin === "comment") {
-      await db.execute(sql_decreaseCommentCount);
+    switch (origin) {
+      case "post":
+        const res0 = await db.execute(sql_deletePost);
+        if (res0) return res.status(200).json({ msg: "post deleted" });
+      case "comment":
+        const res1 = await db.execute(sql_decreaseCommentCount);
+        const res2 = await db.execute(sql_deleteComment);
+        if (res1 && res2)
+          return res.status(200).json({ msg: "comment deleted" });
+      case "reply":
+        const res3 = await db.execute(sql_deleteReply);
+        if (res3) return res.status(200).json({ msg: "reply deleted" });
+      default:
     }
-    const result = await db.execute(
-      origin === "post"
-        ? sql_deletePost
-        : origin === "comment"
-        ? sql_deleteComment
-        : origin === "reply" && sql_deleteReply
-    );
-    if (result) return res.status(200);
   } catch (err) {
     return res.status(500).json({ error: "database" });
   }
@@ -190,11 +206,13 @@ export const createComment = async (req, res) => {
 };
 
 export const getComments = async (req, res) => {
-  const sql_getComments = `SELECT commentId, fk_postId_comment, fk_userId_comment, text, date, likesCount, username, picUrl FROM tbl_comments, tbl_user WHERE tbl_comments.fk_userId_comment=tbl_user.id`;
+  const { postId } = req.params;
+  const sql_getComments = `SELECT commentId, fk_postId_comment, fk_userId_comment, text, date, likesCount, (SELECT username FROM tbl_user WHERE tbl_user.id=tbl_comments.fk_userId_comment) as username,  (SELECT picUrl FROM tbl_user WHERE tbl_user.id = tbl_comments.fk_userId_comment) as picUrl FROM tbl_comments WHERE tbl_comments.fk_postId_comment=?`;
   try {
-    const [comments, _] = await db.execute(sql_getComments);
+    const [comments, _] = await db.execute(sql_getComments, [postId]);
     if (comments) return res.status(200).json({ comments });
   } catch (err) {
+    console.log("erreur", err);
     return res.status(500).json({ error: "database" });
   }
 };
@@ -205,9 +223,14 @@ export const getComments = async (req, res) => {
 
 export const createReply = async (req, res, next) => {
   const { userId, commentId, text, date } = req.body;
-  const sql_createReply = `INSERT INTO tbl_replies (fk_commentId, fk_userId_reply, text, date) VALUES (${commentId},${userId},"${text}","${date}")`;
+  const sql_createReply = `INSERT INTO tbl_replies (fk_commentId, fk_userId_reply, text, date) VALUES (?,?,"?","?")`;
   try {
-    const result = await db.execute(sql_createReply);
+    const result = await db.execute(sql_createReply, [
+      commentId,
+      userId,
+      text,
+      date,
+    ]);
     if (result) {
       console.log("RESULT CREATE REPLY:", result);
       res.status(201).json({ replyId: result[0].insertId });
@@ -218,10 +241,27 @@ export const createReply = async (req, res, next) => {
 };
 
 export const getReplies = async (req, res) => {
-  const sql_getReplies = `SELECT replyId, fk_commentId, fk_userId_reply, text, date, likesCount, username, picUrl FROM tbl_replies, tbl_user WHERE tbl_replies.fk_userId_reply=tbl_user.id`;
+  const { arr } = req.params;
+  // console.log(`${typeof arr}\n_____________________________________`);
+  const idArr = arr.split(",");
+  // console.log(
+  //   `ARRAY OF NUMBERS/ ${typeof +idArr[0]}\n_____________________________________`
+  // );
+  // res.status(200).json({ replies: +idArr[0] });
+  const sql_getReplies = `SELECT replyId, fk_commentId, fk_userId_reply, text, date, likesCount, (SELECT username FROM tbl_user WHERE tbl_user.id=tbl_replies.fk_userId_reply) as username,  (SELECT picUrl FROM tbl_user WHERE tbl_user.id = tbl_replies.fk_userId_reply) as picUrl FROM tbl_replies WHERE tbl_replies.fk_commentId=?`;
+  const replies = [];
   try {
-    const [replies, _] = await db.execute(sql_getReplies);
-    if (replies) return res.status(200).json({ replies });
+    for (let index of idArr) {
+      let [res, _] = await db.execute(sql_getReplies, [+index]);
+      if (res.length > 0) {
+        res.forEach((i) => replies.push(i));
+      }
+    }
+    // const [replies, _] = await db.execute(sql_getReplies, [commentId]);
+    if (replies) {
+      console.log("REPLIES", replies.length, replies);
+      return res.status(200).json({ replies });
+    }
   } catch (err) {
     return res.status(500).json({ error: "database" });
   }

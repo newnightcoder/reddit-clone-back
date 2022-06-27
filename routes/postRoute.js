@@ -17,14 +17,14 @@ postRouter.post("/edit", authorizeToken, postController.editPost);
 postRouter.post("/delete", authorizeToken, postController.deletePost);
 
 // COMMENT
-postRouter.get("/comment", authorizeToken, postController.getComments);
+postRouter.get("/comment/:postId", authorizeToken, postController.getComments);
 postRouter.post("/comment", authorizeToken, postController.createComment);
 
 // LIKE
 postRouter.get("/like", postController.getLikes);
 
 // REPLY
-postRouter.get("/reply", authorizeToken, postController.getReplies);
+postRouter.get("/reply/:arr", authorizeToken, postController.getReplies);
 postRouter.post("/reply", authorizeToken, postController.createReply);
 
 export default postRouter;

@@ -345,3 +345,41 @@ export const getFollowers = async (req, res) => {
     return res.status(500).json({ error: "database" });
   }
 };
+
+export const getSearchResults = async (req, res) => {
+  const { query, filter } = req.params;
+  console.log("QUERY", query, "FILTER", filter);
+  console.log("params", req.params);
+  const getResultsUser = `SELECT * FROM tbl_user WHERE username LIKE "%${query}%"`;
+  const getResultsPost = `SELECT * FROM tbl_post WHERE text LIKE "%${query}%" OR title LIKE "%${query}%" OR previewUrl LIKE "%${query}%" OR previewImg LIKE "%${query}%" OR previewPub LIKE "%${query}%" OR previewTitle LIKE "%${query}%" OR previewText LIKE "%${query}%"`;
+
+  try {
+    switch (filter) {
+      case "user": {
+        const [res0, _] = await db.execute(getResultsUser, [query]);
+        if (res0) {
+          console.log(res0);
+          return res.status(200).json({ results: res0 });
+        }
+      }
+
+      case "post": {
+        const [res1, _] = await db.execute(getResultsPost, [query]);
+        if (res1) {
+          console.log(res1);
+          return res.status(200).json({ results: res1 });
+        }
+      }
+      default: {
+        const [res0, __] = await db.execute(getResultsUser, [query]);
+        const [res1, _] = await db.execute(getResultsPost, [query]);
+        if (res0 && res1) {
+          console.log([...res0, ...res1]);
+          return res.status(200).json({ results: [...res0, ...res1] });
+        }
+      }
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};

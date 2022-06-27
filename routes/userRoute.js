@@ -31,4 +31,7 @@ userRoute.post("/like", authorizeToken, userController.likePost);
 userRoute.get("/follow/:id", authorizeToken, userController.getFollowers);
 userRoute.post("/follow", authorizeToken, userController.follow);
 
+// SEARCH
+userRoute.get("/search/:query/:filter", userController.getSearchResults);
+
 export default userRoute;

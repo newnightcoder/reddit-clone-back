@@ -174,7 +174,6 @@ export const getUserProfile = async (req, res) => {
       res.status(200).json({ user: user[0] });
     } else res.status(500).json({ error: "database" });
   } catch (err) {
-    console.log("merdouille!!!");
     res.status(500).json({ error: "database" });
   }
 };
@@ -351,35 +350,81 @@ export const getSearchResults = async (req, res) => {
   console.log("QUERY", query, "FILTER", filter);
   console.log("params", req.params);
   const getResultsUser = `SELECT * FROM tbl_user WHERE username LIKE "%${query}%"`;
-  const getResultsPost = `SELECT * FROM tbl_post WHERE text LIKE "%${query}%" OR title LIKE "%${query}%" OR previewUrl LIKE "%${query}%" OR previewImg LIKE "%${query}%" OR previewPub LIKE "%${query}%" OR previewTitle LIKE "%${query}%" OR previewText LIKE "%${query}%"`;
-
+  const getResultsPost = `SELECT title, postId, text, date, imgUrl, fk_userId_post, username, picUrl, likesCount, commentCount, isPreview, previewTitle, previewText, previewImg, previewPub, previewUrl, previewPubLogo
+  FROM tbl_post JOIN tbl_user ON tbl_post.fk_userId_post=tbl_user.id WHERE username LIKE "%${query}%" OR text LIKE "%${query}%" OR title LIKE "%${query}%" OR previewUrl LIKE "%${query}%" OR previewImg LIKE "%${query}%" OR previewPub LIKE "%${query}%" OR previewTitle LIKE "%${query}%" OR previewText LIKE "%${query}%"`;
+  const transformPosts = (array) => {
+    const posts = array.map((post, i) => {
+      return {
+        id: post.postId,
+        author: {
+          id: post.fk_userId_post,
+          username: post.username,
+          picUrl: post.picUrl,
+        },
+        title: post.title,
+        text: post.text,
+        date: post.date,
+        imgUrl: post.imgUrl,
+        isPreview: post.isPreview === 1 ? true : false,
+        preview: {
+          title: post.previewTitle,
+          text: post.previewText,
+          image: post.previewImg,
+          publisher: post.previewPub,
+          logo: post.previewPubLogo,
+          url: post.previewUrl,
+        },
+        engagement: {
+          likesCount: post.likesCount,
+          commentCount: post.commentCount,
+        },
+      };
+    });
+    return posts;
+  };
   try {
     switch (filter) {
       case "user": {
-        const [res0, _] = await db.execute(getResultsUser, [query]);
-        if (res0) {
-          console.log(res0);
-          return res.status(200).json({ results: res0 });
+        const [users, _] = await db.execute(getResultsUser, [query]);
+        if (users) {
+          console.log(users);
+          return res.status(200).json({
+            results: {
+              users,
+              posts: [],
+            },
+          });
         }
       }
 
       case "post": {
-        const [res1, _] = await db.execute(getResultsPost, [query]);
-        if (res1) {
-          console.log(res1);
-          return res.status(200).json({ results: res1 });
+        let [posts, _] = await db.execute(getResultsPost, [query]);
+        if (posts) {
+          console.log(posts);
+          posts = transformPosts(posts);
+          return res.status(200).json({
+            results: {
+              users: [],
+              posts,
+            },
+          });
         }
       }
       default: {
-        const [res0, __] = await db.execute(getResultsUser, [query]);
-        const [res1, _] = await db.execute(getResultsPost, [query]);
-        if (res0 && res1) {
-          console.log([...res0, ...res1]);
-          return res.status(200).json({ results: [...res0, ...res1] });
+        const [users, __] = await db.execute(getResultsUser, [query]);
+        let [posts, _] = await db.execute(getResultsPost, [query]);
+        if (users && posts) {
+          posts = transformPosts(posts);
+          return res.status(200).json({
+            results: {
+              users,
+              posts,
+            },
+          });
         }
       }
     }
-  } catch (error) {
-    console.log(error);
+  } catch (err) {
+    console.log(err);
   }
 };

@@ -24,7 +24,6 @@ postRouter.post("/comment", authorizeToken, postController.createComment);
 postRouter.get("/like", postController.getLikes);
 
 // REPLY
-postRouter.get("/reply/:arr", authorizeToken, postController.getReplies);
 postRouter.post("/reply", authorizeToken, postController.createReply);
 
 export default postRouter;

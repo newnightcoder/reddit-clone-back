@@ -1,33 +1,60 @@
 import { db } from "../DB/db.config.js";
 
 export class Post {
-  constructor(
-    id,
-    userId,
-    title,
-    text,
-    date,
-    imgUrl,
-    likesCount,
-    isPreview,
-    preview
-  ) {
-    this.id = id;
+  constructor(userId, title, text, date, imgUrl, isPreview, preview) {
     this.userId = userId;
     this.title = title;
     this.text = text;
     this.date = date;
     this.imgUrl = imgUrl;
-    this.likesCount = likesCount;
     this.isPreview = isPreview;
     this.preview = preview;
   }
 
+  static transformPosts = (array) => {
+    const posts = array.map((post, i) => {
+      return {
+        id: post.postId,
+        author: {
+          id: post.fk_userId_post,
+          username: post.username,
+          picUrl: post.picUrl,
+        },
+        title: post.title,
+        text: post.text,
+        date: post.date,
+        imgUrl: post.imgUrl,
+        isPreview: post.isPreview === 1 ? true : false,
+        preview: {
+          title: post.previewTitle,
+          text: post.previewText,
+          image: post.previewImg,
+          publisher: post.previewPub,
+          logo: post.previewPubLogo,
+          url: post.previewUrl,
+        },
+        engagement: {
+          likesCount: post.likesCount,
+          commentCount: post.commentCount,
+        },
+      };
+    });
+    return posts;
+  };
+
   static async getPosts() {
     const sqlGetPost = `SELECT title, postId, text, date, imgUrl, fk_userId_post, username, picUrl, likesCount, commentCount, isPreview, previewTitle, previewText, previewImg, previewPub, previewUrl, previewPubLogo FROM tbl_post, tbl_user WHERE tbl_post.fk_userId_post=tbl_user.id`;
+
     try {
-      const [posts, _] = await db.execute(sqlGetPost);
-      if (posts) return posts;
+      const [result, _] = await db.execute(sqlGetPost);
+      if (result) {
+        const posts = this.transformPosts(result).sort((a, b) => {
+          if (a.id < b.id) return 1;
+          if (a.id > b.id) return -1;
+          return 0;
+        });
+        return posts;
+      }
     } catch (error) {
       throw error;
     }
@@ -36,12 +63,12 @@ export class Post {
   static async getUserPosts(userId) {
     const GET_USER_POSTS = `SELECT title, postId, text, date, imgUrl, fk_userId_post, username, picUrl, likesCount, commentCount, isPreview, previewTitle, previewText, previewImg, previewPub, previewUrl, previewPubLogo FROM tbl_post, tbl_user WHERE tbl_post.fk_userId_post="${userId}" AND tbl_user.id="${userId}"`;
     try {
-      const [posts, _] = await db.execute(GET_USER_POSTS);
-      const postsInOrder = posts.sort((a, b) => {
+      const [result, _] = await db.execute(GET_USER_POSTS);
+      const posts = this.transformPosts(result).sort((a, b) => {
         if (a.postId < b.postId) return 1;
         else return -1;
       });
-      return postsInOrder;
+      return posts;
     } catch (error) {
       throw error;
     }
@@ -58,17 +85,16 @@ export class Post {
   }
 
   async create() {
-    const sqlCreatePost =
-      this.isPreview === 1
-        ? `INSERT INTO tbl_post (fk_userId_post, title, text, date, imgUrl, isPreview, previewTitle, previewText, previewImg, previewPub, previewUrl, previewPubLogo ) 
+    const sqlCreatePost = this.isPreview
+      ? `INSERT INTO tbl_post (fk_userId_post, title, text, date, imgUrl, isPreview, previewTitle, previewText, previewImg, previewPub, previewUrl, previewPubLogo ) 
         VALUES (${this.userId},"${this.title}", "${this.text}", 
-        "${this.date}","${this.imgUrl}","${this.isPreview}",
-        "${this.preview.title}","${this.preview.description.substr(0, 100)}",
+        "${this.date}","${this.imgUrl}",${this.isPreview ? 1 : 0},
+        "${this.preview.title}","${this.preview.text.substr(0, 100)}",
         "${this.preview.image}",
         "${this.preview.publisher !== null ? this.preview.publisher : ""}",
         "${this.preview.url}",
         "${this.preview.logo !== null ? this.preview.logo : ""}")`
-        : `INSERT INTO tbl_post (fk_userId_post, title, text, date, imgUrl) VALUES (${this.userId},"${this.title}", "${this.text}", "${this.date}","${this.imgUrl}")`;
+      : `INSERT INTO tbl_post (fk_userId_post, title, text, date, imgUrl) VALUES (${this.userId},"${this.title}", "${this.text}", "${this.date}","${this.imgUrl}")`;
     const sqlGetPost = `SELECT * FROM tbl_post WHERE postId=?`;
 
     try {

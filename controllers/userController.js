@@ -37,15 +37,16 @@ export const logUser = async (req, res, next) => {
 
 export const createUser = async (req, res, next) => {
   const { email, password, date } = req.body;
+  console.log("SIGNUP INFO", email, password, date);
   const salt = 10;
   const hash = bcrypt.hashSync(password, salt);
-  const user = new User(null, email, hash, date);
+  const user = new User(null, email, hash, null, date);
   console.log("DATE", date);
   try {
     const userId = await user.create();
-    res.status(201).json({ userId });
+    if (userId) return res.status(201).json({ userId });
   } catch (err) {
-    console.log(err);
+    console.log("ERROR", err);
     const { errno } = err;
     res
       .status(500)
@@ -58,8 +59,9 @@ export const createUser = async (req, res, next) => {
 //////////////////////////////////////
 
 export const addUserName = async (req, res, next) => {
-  const { id, username } = req.body;
-  const user = new User(id, null, null, null, username);
+  const { id, name } = req.body;
+  console.log(id, name);
+  const user = new User(id, null, null, name, null);
   try {
     const result = await user.addUsername();
     const accessToken = createToken(id);
@@ -77,18 +79,41 @@ export const addUserName = async (req, res, next) => {
   }
 };
 
-/////////////////////////////////////
-// ADD USER PIC (CREATE USER STEP 3)
-/////////////////////////////////////
+////////////////////////////////////////////////////
+// ADD USER PIC (CREATE USER STEP 3 / EDIT PROFILE)
+////////////////////////////////////////////////////
 
 export const addUserPic = async (req, res, next) => {
   const fileLocation = req.file?.location;
   const { id, imgType } = req.body;
   const user = new User(id);
-
+  console.log(fileLocation, id, imgType);
   try {
     const picUrl = await user.addAvatarImg(fileLocation, imgType);
     if (picUrl) res.status(200).json({ picUrl });
+  } catch (err) {
+    console.log("ERROR", err);
+    res.status(500).json({ error: "database" });
+  }
+};
+
+export const deleteUserpic = async (req, res) => {
+  const { id, imgType } = req.body;
+  const sql_deletePicUrl = `UPDATE tbl_user SET picUrl = "" WHERE id = ?`;
+  const sql_deleteBannerUrl = `UPDATE tbl_user SET bannerUrl = "" WHERE id = ?`;
+  try {
+    switch (imgType) {
+      case "pic": {
+        const result = await db.execute(sql_deletePicUrl, [id]);
+        if (result) return res.status(200).json({ result: "pic deleted" });
+      }
+      case "banner": {
+        const result = await db.execute(sql_deleteBannerUrl, [id]);
+        if (result) return res.status(200).json({ result: "banner deleted" });
+      }
+      default:
+        return;
+    }
   } catch (err) {
     res.status(500).json({ error: "database" });
   }
@@ -165,7 +190,7 @@ export const getMods = async (req, res, next) => {
 /////////////////////////////////////
 
 export const getUserProfile = async (req, res) => {
-  const { id } = req.body;
+  const { id } = req.params;
   const sql_getUserProfile = `SELECT id, username, picUrl, bannerUrl, creationDate, followingCount, followersCount FROM tbl_user WHERE id=?`;
   try {
     const [user, _] = await db.execute(sql_getUserProfile, [id || null]);
@@ -187,7 +212,7 @@ export const deleteUser = async (req, res, next) => {
   const user = new User(id);
   try {
     const deleted = await user.delete();
-    if (deleted) return res.status(200);
+    if (deleted) return res.status(200).json({ status: 200 });
   } catch (err) {
     res.status(500).json({ error: "database" });
   }

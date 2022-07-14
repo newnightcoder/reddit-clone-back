@@ -7,8 +7,8 @@ export class User {
     this.id = id;
     this.email = email;
     this.password = password;
-    this.creationDate = creationDate;
     this.username = username;
+    this.creationDate = creationDate;
   }
 
   async login() {
@@ -59,7 +59,7 @@ export class User {
 
   async addUsername() {
     const sql_addUserName = `
-    UPDATE tbl_user  SET username = ?  WHERE id = ?
+    UPDATE tbl_user SET username = ?  WHERE id = ?
     `;
     const sql_getUser = `SELECT username, email, creationDate FROM tbl_user WHERE id=? `;
     const connection = await db.getConnection();

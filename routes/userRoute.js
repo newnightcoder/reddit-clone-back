@@ -16,12 +16,13 @@ userRoute.post("/username", userController.addUserName);
 userRoute.post("/edit", authorizeToken, userController.editUsername);
 
 // PIC / PROFILE
-userRoute.post("/userpic", upload, userController.addUserPic);
-userRoute.post("/", authorizeToken, userController.getUserProfile);
+userRoute.get("/:id", authorizeToken, userController.getUserProfile);
+userRoute.post("/pic", upload, userController.addUserPic);
+userRoute.post("/pic/delete", authorizeToken, userController.deleteUserpic);
 userRoute.post("/delete", authorizeToken, userController.deleteUser);
 
 // RECENT USERS & MODS
-userRoute.get("/user", userController.getRecentUsers);
+userRoute.get("/recent", userController.getRecentUsers);
 userRoute.get("/mods", userController.getMods);
 
 // LIKE

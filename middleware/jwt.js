@@ -16,6 +16,7 @@ export const authorizeToken = (req, res, next) => {
 
     if (!token) {
       console.log("NO AUTH TOKEN");
+      console.log(req.originalUrl);
       return res.status(401).json({ error: "noAuthToken" });
     }
 
@@ -32,7 +33,7 @@ export const authorizeToken = (req, res, next) => {
       req.user = user;
       next();
     });
-  } catch (error) {
+  } catch (err) {
     console.log("authTokenError");
     res.status(500).json({ error: "authTokenError" });
   }

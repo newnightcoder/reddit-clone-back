@@ -130,7 +130,7 @@ export class User {
         }
         break;
       default:
-        break;
+        return;
     }
   }
 }

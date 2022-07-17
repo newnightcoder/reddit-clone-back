@@ -13,10 +13,10 @@ export const authorizeToken = (req, res, next) => {
   try {
     const authHeaders = req.headers.authorization;
     const token = authHeaders?.split(" ")[1];
-
     if (!token) {
       console.log("NO AUTH TOKEN");
       console.log(req.originalUrl);
+      console.log("ça vient de:", req.path);
       return res.status(401).json({ error: "noAuthToken" });
     }
 

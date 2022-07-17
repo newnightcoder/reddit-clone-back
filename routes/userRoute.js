@@ -11,6 +11,10 @@ userRoute.post("/signup", userController.createUser);
 // LOGIN
 userRoute.post("/login", userController.logUser);
 
+// RECENT USERS & MODS
+userRoute.get("/recent", userController.getRecentUsers);
+userRoute.get("/mods", userController.getMods);
+
 // USERNAME
 userRoute.post("/username", userController.addUserName);
 userRoute.post("/edit", authorizeToken, userController.editUsername);
@@ -20,10 +24,6 @@ userRoute.get("/:id", authorizeToken, userController.getUserProfile);
 userRoute.post("/pic", upload, userController.addUserPic);
 userRoute.post("/pic/delete", authorizeToken, userController.deleteUserpic);
 userRoute.post("/delete", authorizeToken, userController.deleteUser);
-
-// RECENT USERS & MODS
-userRoute.get("/recent", userController.getRecentUsers);
-userRoute.get("/mods", userController.getMods);
 
 // LIKE
 userRoute.post("/like", authorizeToken, userController.likePost);

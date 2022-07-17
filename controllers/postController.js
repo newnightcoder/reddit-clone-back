@@ -231,7 +231,7 @@ export const createComment = async (req, res) => {
   const sql_createComment = `INSERT INTO tbl_comments (fk_userId_comment, fk_postId_comment, text, date) VALUES (${userId},${postId},"${text}","${date}")`;
   const sql_increaseCommentCount = `UPDATE tbl_post SET commentCount = commentCount+1 WHERE postId=${postId}`;
   const sql_getCommentCount = `SELECT commentCount FROM tbl_post WHERE postId = ${postId} `;
-  const sql_getComment = `SELECT commentId, fk_postId_comment, fk_userId_comment, text, date, likesCount, (SELECT username FROM tbl_user WHERE tbl_user.id=${userId}) as username,  (SELECT picUrl FROM tbl_user WHERE tbl_user.id = ${userId}) as picUrl FROM tbl_comments WHERE tbl_comments.commentId=?`;
+  const sql_getComment = `SELECT commentId, fk_postId_comment, fk_userId_comment, text, date, likesCount, replyCount, (SELECT username FROM tbl_user WHERE tbl_user.id=${userId}) as username,  (SELECT picUrl FROM tbl_user WHERE tbl_user.id = ${userId}) as picUrl FROM tbl_comments WHERE tbl_comments.commentId=?`;
   try {
     const [comment, __] = await db.execute(sql_createComment);
     const updatedCount = await db.execute(sql_increaseCommentCount);

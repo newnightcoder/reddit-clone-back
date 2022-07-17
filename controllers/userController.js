@@ -99,8 +99,8 @@ export const addUserPic = async (req, res, next) => {
 
 export const deleteUserpic = async (req, res) => {
   const { id, imgType } = req.body;
-  const sql_deletePicUrl = `UPDATE tbl_user SET picUrl = "" WHERE id = ?`;
-  const sql_deleteBannerUrl = `UPDATE tbl_user SET bannerUrl = "" WHERE id = ?`;
+  const sql_deletePicUrl = `UPDATE tbl_user SET picUrl = ${null} WHERE id = ?`;
+  const sql_deleteBannerUrl = `UPDATE tbl_user SET bannerUrl = ${null} WHERE id = ?`;
   try {
     switch (imgType) {
       case "pic": {
@@ -167,7 +167,9 @@ export const getRecentUsers = async (req, res, next) => {
     }
   } catch (err) {
     console.log(err);
-    return res.status(500).json({ error: "database" });
+    return res
+      .status(500)
+      .json({ error: err.code === "ETIMEDOUT" ? "timeout" : "database" });
   }
 };
 
@@ -355,7 +357,7 @@ export const follow = async (req, res) => {
 export const getFollowers = async (req, res) => {
   const { id } = req.params;
   const sql_getFollowers = `SELECT id, (SELECT username FROM tbl_user WHERE id=fk_userId_following) as username, (SELECT picUrl FROM tbl_user WHERE id=fk_userId_following) as picUrl, (SELECT id FROM tbl_user WHERE id=fk_userId_following) as userId  FROM tbl_follow WHERE tbl_follow.fk_userId_followed=? `;
-  const sql_getFollowing = `SELECT id, (SELECT username FROM tbl_user WHERE id=fk_userId_followed) as username, (SELECT picUrl FROM tbl_user WHERE id=fk_userId_followed) as picUrl, (SELECT picUrl FROM tbl_user WHERE id=fk_userId_following) as userId  FROM tbl_follow WHERE tbl_follow.fk_userId_following=? `;
+  const sql_getFollowing = `SELECT id, (SELECT username FROM tbl_user WHERE id=fk_userId_followed) as username, (SELECT picUrl FROM tbl_user WHERE id=fk_userId_followed) as picUrl, (SELECT id FROM tbl_user WHERE id=fk_userId_followed) as userId  FROM tbl_follow WHERE tbl_follow.fk_userId_following=? `;
   try {
     const [followers, _] = await db.execute(sql_getFollowers, [id]);
     const [following, __] = await db.execute(sql_getFollowing, [id]);

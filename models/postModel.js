@@ -12,7 +12,7 @@ export class Post {
   }
 
   static transformPosts = (array) => {
-    const posts = array.map((post, i) => {
+    const posts = array.map((post) => {
       return {
         id: post.postId,
         author: {
@@ -42,12 +42,25 @@ export class Post {
     return posts;
   };
 
+  static transformLikes = (array) => {
+    const likes = array.map((like) => {
+      return {
+        userId: like.fk_userId_like,
+        postId: like.fk_postId_like,
+        commentId: like.fk_commentId_like,
+        replyId: like.fk_replyId_like,
+      };
+    });
+    return likes;
+  };
+
   static async getPosts() {
     const sqlGetPost = `SELECT title, postId, text, date, imgUrl, fk_userId_post, username, picUrl, likesCount, commentCount, isPreview, previewTitle, previewText, previewImg, previewPub, previewUrl, previewPubLogo FROM tbl_post, tbl_user WHERE tbl_post.fk_userId_post=tbl_user.id`;
 
     try {
       const [result, _] = await db.execute(sqlGetPost);
       if (result) {
+        console.log("this getPosts", this);
         const posts = this.transformPosts(result).sort((a, b) => {
           if (a.id < b.id) return 1;
           if (a.id > b.id) return -1;
@@ -77,8 +90,11 @@ export class Post {
   static async getLikes() {
     const GET_LIKES = "SELECT * FROM tbl_like";
     try {
-      const [likes, _] = await db.execute(GET_LIKES);
-      if (likes) return likes;
+      const [result, _] = await db.execute(GET_LIKES);
+      if (result) {
+        const likes = this.transformLikes(result);
+        return likes;
+      }
     } catch (error) {
       throw error;
     }
@@ -104,14 +120,36 @@ export class Post {
       const userData = await db.execute(
         `SELECT username, picUrl FROM tbl_user WHERE id=${post[0][0].fk_userId_post}`
       );
-      const newPost = {
-        ...post[0][0],
-        username: userData[0][0].username,
-        picUrl: userData[0][0].picUrl,
-      };
-
-      console.log("NEW POST", newPost);
-      return newPost;
+      if (post && userData) {
+        const p = post[0][0];
+        const user = userData[0][0];
+        const newPost = {
+          id: p.postId,
+          author: {
+            id: p.fk_userId_post,
+            username: user.username,
+            picUrl: user.picUrl,
+          },
+          title: p.title,
+          text: p.text,
+          date: p.date,
+          imgUrl: p.imgUrl,
+          isPreview: p.isPreview === 1 ? true : false,
+          preview: {
+            title: p.previewTitle,
+            text: p.previewText,
+            image: p.previewImg,
+            publisher: p.previewPub,
+            logo: p.previewPubLogo,
+            url: p.previewUrl,
+          },
+          engagement: {
+            likesCount: p.likesCount,
+            commentCount: p.commentCount,
+          },
+        };
+        return newPost;
+      }
     } catch (error) {
       console.log(error);
       throw error;

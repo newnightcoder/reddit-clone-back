@@ -85,25 +85,15 @@ export const savePostImg = (req, res) => {
 
 export const createPost = async (req, res) => {
   const { post } = req.body;
-  const {
-    author: { id: userId },
-    title,
-    text,
-    date,
-    imgUrl,
-    isPreview,
-    preview,
-  } = post;
   const newPost = new Post(
-    userId,
-    title,
-    text,
-    date,
-    imgUrl,
-    isPreview,
-    preview
+    post.author.id,
+    post.title,
+    post.text,
+    post.date,
+    post.imgUrl,
+    post.isPreview,
+    post.preview
   );
-  console.log("userId:", userId);
   try {
     const result = await newPost.create();
     if (result) return res.status(201).json({ newPost: result });

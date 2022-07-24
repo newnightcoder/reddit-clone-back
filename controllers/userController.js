@@ -27,7 +27,9 @@ export const logUser = async (req, res, next) => {
         return res.status(200).json({ user, isNewUser: false, accessToken });
     }
   } catch (err) {
-    res.status(500).json({ error: "database" });
+    const timeout =
+      err.code === "ETIMEDOUT" || err.code === "PROTOCOL_CONNECTION_LOST";
+    res.status(500).json({ error: timeout ? "timeout" : "database" });
   }
 };
 
@@ -46,11 +48,13 @@ export const createUser = async (req, res, next) => {
     const userId = await user.create();
     if (userId) return res.status(201).json({ userId });
   } catch (err) {
-    console.log("ERROR", err);
-    const { errno } = err;
-    res
-      .status(500)
-      .json({ error: errno === 1062 ? "duplicateEmail" : "database" });
+    console.log(err);
+    const { errno, code } = err;
+    const timeout = code === "ETIMEDOUT" || code === "PROTOCOL_CONNECTION_LOST";
+    res.status(500).json({
+      error:
+        errno === 1062 ? "duplicateEmail" : timeout ? "timeout" : "database",
+    });
   }
 };
 
@@ -67,13 +71,16 @@ export const addUserName = async (req, res, next) => {
     const accessToken = createToken(id);
     res.status(200).json({ result, accessToken, isNewUser: true });
   } catch (err) {
-    const { errno } = err;
+    const { errno, code } = err;
+    const timeout = code === "ETIMEDOUT" || code === "PROTOCOL_CONNECTION_LOST";
     res.status(500).json({
       error:
         errno === 1062
           ? "duplicateUsername"
           : errno === 1406
           ? "nameTooLong"
+          : timeout
+          ? "timeout"
           : "database",
     });
   }
@@ -115,7 +122,9 @@ export const deleteUserpic = async (req, res) => {
         return;
     }
   } catch (err) {
-    res.status(500).json({ error: "database" });
+    const timeout =
+      err.code === "ETIMEDOUT" || err.code === "PROTOCOL_CONNECTION_LOST";
+    res.status(500).json({ error: timeout ? "timeout" : "database" });
   }
 };
 
@@ -136,12 +145,16 @@ export const editUsername = async (req, res, next) => {
   } catch (err) {
     console.log("ERROR", err, "ERROR MSG", err.message);
     const { errno } = err;
+    const timeout =
+      err.code === "ETIMEDOUT" || err.code === "PROTOCOL_CONNECTION_LOST";
     res.status(500).json({
       error:
         errno === 1062
           ? "duplicateUsername"
           : errno === 1406
           ? "nameTooLong"
+          : timeout
+          ? "timeout"
           : "database",
     });
   }
@@ -167,9 +180,9 @@ export const getRecentUsers = async (req, res, next) => {
     }
   } catch (err) {
     console.log(err);
-    return res
-      .status(500)
-      .json({ error: err.code === "ETIMEDOUT" ? "timeout" : "database" });
+    const timeout =
+      err.code === "ETIMEDOUT" || err.code === "PROTOCOL_CONNECTION_LOST";
+    return res.status(500).json({ error: timeout ? "timeout" : "database" });
   }
 };
 
@@ -183,7 +196,9 @@ export const getMods = async (req, res, next) => {
     const [mods, _] = await db.execute(sql_getMods);
     if (mods) return res.status(200).json({ mods });
   } catch (err) {
-    return res.status(500).json({ error: "database" });
+    const timeout =
+      err.code === "ETIMEDOUT" || err.code === "PROTOCOL_CONNECTION_LOST";
+    return res.status(500).json({ error: timeout ? "timeout" : "database" });
   }
 };
 
@@ -201,7 +216,9 @@ export const getUserProfile = async (req, res) => {
       res.status(200).json({ user: user[0] });
     } else res.status(500).json({ error: "database" });
   } catch (err) {
-    res.status(500).json({ error: "database" });
+    const timeout =
+      err.code === "ETIMEDOUT" || err.code === "PROTOCOL_CONNECTION_LOST";
+    res.status(500).json({ error: timeout ? "timeout" : "database" });
   }
 };
 
@@ -216,7 +233,9 @@ export const deleteUser = async (req, res, next) => {
     const deleted = await user.delete();
     if (deleted) return res.status(200).json({ status: 200 });
   } catch (err) {
-    res.status(500).json({ error: "database" });
+    const timeout =
+      err.code === "ETIMEDOUT" || err.code === "PROTOCOL_CONNECTION_LOST";
+    res.status(500).json({ error: timeout ? "timeout" : "database" });
   }
 };
 
@@ -287,7 +306,9 @@ export const likePost = async (req, res, next) => {
         }
       } catch (err) {
         console.log(err);
-        res.status(500).json({ error: "database" });
+        const timeout =
+          err.code === "ETIMEDOUT" || err.code === "PROTOCOL_CONNECTION_LOST";
+        res.status(500).json({ error: timeout ? "timeout" : "database" });
       }
       break;
     default:
@@ -344,9 +365,11 @@ export const follow = async (req, res) => {
         }
       default:
     }
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: "database" });
+  } catch (err) {
+    console.log(err);
+    const timeout =
+      err.code === "ETIMEDOUT" || err.code === "PROTOCOL_CONNECTION_LOST";
+    res.status(500).json({ error: timeout ? "timeout" : "database" });
   }
 };
 
@@ -367,8 +390,10 @@ export const getFollowers = async (req, res) => {
       console.log("FOLLOWING LIST", following);
       return res.status(200).json({ followers, following });
     }
-  } catch (error) {
-    return res.status(500).json({ error: "database" });
+  } catch (err) {
+    const timeout =
+      err.code === "ETIMEDOUT" || err.code === "PROTOCOL_CONNECTION_LOST";
+    return res.status(500).json({ error: timeout ? "timeout" : "database" });
   }
 };
 
@@ -453,5 +478,8 @@ export const getSearchResults = async (req, res) => {
     }
   } catch (err) {
     console.log(err);
+    const timeout =
+      err.code === "ETIMEDOUT" || err.code === "PROTOCOL_CONNECTION_LOST";
+    res.status(500).json({ error: timeout ? "timeout" : "database" });
   }
 };

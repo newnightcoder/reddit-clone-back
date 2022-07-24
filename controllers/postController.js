@@ -14,7 +14,9 @@ export const getPosts = async (req, res, next) => {
       res.status(200).json({ posts, likes });
     }
   } catch (err) {
-    res.status(500).json({ error: "database" });
+    const timeout =
+      err.code === "ETIMEDOUT" || err.code === "PROTOCOL_CONNECTION_LOST";
+    res.status(500).json({ error: timeout ? "timeout" : "database" });
   }
 };
 
@@ -31,7 +33,9 @@ export const getPostById = async (req, res, next) => {
     if (post) return res.status(200).json({ currentPost: post[0] });
   } catch (err) {
     console.log(err);
-    res.status(500).json({ error: "database" });
+    const timeout =
+      err.code === "ETIMEDOUT" || err.code === "PROTOCOL_CONNECTION_LOST";
+    res.status(500).json({ error: timeout ? "timeout" : "database" });
   }
 };
 
@@ -44,7 +48,9 @@ export const getLikes = async (req, res) => {
     const likes = await Post.getLikes();
     if (likes) return res.status(200).json({ likes });
   } catch (err) {
-    return res.status(500).json({ error: "database" });
+    const timeout =
+      err.code === "ETIMEDOUT" || err.code === "PROTOCOL_CONNECTION_LOST";
+    return res.status(500).json({ error: timeout ? "timeout" : "database" });
   }
 };
 
@@ -63,7 +69,9 @@ export const getUserPosts = async (req, res) => {
         likes,
       });
   } catch (err) {
-    return res.status(500).json({ error: "database" });
+    const timeout =
+      err.code === "ETIMEDOUT" || err.code === "PROTOCOL_CONNECTION_LOST";
+    return res.status(500).json({ error: timeout ? "timeout" : "database" });
   }
 };
 
@@ -76,7 +84,9 @@ export const savePostImg = (req, res) => {
   try {
     if (fileLocation) return res.status(201).json({ imgUrl: fileLocation });
   } catch (err) {
-    res.status(500).json({ error: "database" });
+    const timeout =
+      err.code === "ETIMEDOUT" || err.code === "PROTOCOL_CONNECTION_LOST";
+    res.status(500).json({ error: timeout ? "timeout" : "database" });
   }
 };
 ///////////////////
@@ -98,7 +108,9 @@ export const createPost = async (req, res) => {
     const result = await newPost.create();
     if (result) return res.status(201).json({ newPost: result });
   } catch (err) {
-    res.status(500).json({ error: "database" });
+    const timeout =
+      err.code === "ETIMEDOUT" || err.code === "PROTOCOL_CONNECTION_LOST";
+    res.status(500).json({ error: timeout ? "timeout" : "database" });
   }
 };
 
@@ -168,7 +180,9 @@ export const editPost = async (req, res) => {
     }
   } catch (err) {
     console.log(err);
-    res.status(500).json({ error: "database" });
+    const timeout =
+      err.code === "ETIMEDOUT" || err.code === "PROTOCOL_CONNECTION_LOST";
+    res.status(500).json({ error: timeout ? "timeout" : "database" });
   }
 };
 
@@ -201,7 +215,9 @@ export const deletePost = async (req, res, next) => {
       default:
     }
   } catch (err) {
-    return res.status(500).json({ error: "database" });
+    const timeout =
+      err.code === "ETIMEDOUT" || err.code === "PROTOCOL_CONNECTION_LOST";
+    return res.status(500).json({ error: timeout ? "timeout" : "database" });
   }
 };
 
@@ -240,7 +256,9 @@ export const createComment = async (req, res) => {
       }
     }
   } catch (err) {
-    return res.status(500).json({ error: "database" });
+    const timeout =
+      err.code === "ETIMEDOUT" || err.code === "PROTOCOL_CONNECTION_LOST";
+    return res.status(500).json({ error: timeout ? "timeout" : "database" });
   }
 };
 
@@ -278,8 +296,10 @@ export const getComments = async (req, res) => {
       }
     }
   } catch (err) {
-    console.log("erreur", err);
-    return res.status(500).json({ error: "database" });
+    console.log(err);
+    const timeout =
+      err.code === "ETIMEDOUT" || err.code === "PROTOCOL_CONNECTION_LOST";
+    return res.status(500).json({ error: timeout ? "timeout" : "database" });
   }
 };
 
@@ -307,8 +327,10 @@ export const createReply = async (req, res, next) => {
         .json({ replyId: res0[0].insertId, newReply: newReply[0] });
     }
   } catch (err) {
-    console.log("ERROR", err);
-    res.status(500).json({ error: "database" });
+    console.log(err);
+    const timeout =
+      err.code === "ETIMEDOUT" || err.code === "PROTOCOL_CONNECTION_LOST";
+    res.status(500).json({ error: timeout ? "timeout" : "database" });
   }
 };
 
@@ -332,7 +354,9 @@ export const sendLinkData = async (req, res) => {
       res.status(200).json({ article });
     }
   } catch (err) {
-    console.log("ERREUR SENDLINKDATA:", err);
-    res.status(500).json({ error: "database" });
+    console.log(err);
+    const timeout =
+      err.code === "ETIMEDOUT" || err.code === "PROTOCOL_CONNECTION_LOST";
+    res.status(500).json({ error: timeout ? "timeout" : "database" });
   }
 };

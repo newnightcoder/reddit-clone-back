@@ -29,7 +29,6 @@ export const getPostById = async (req, res, next) => {
   const sqlGetPostById = `SELECT * , (SELECT username FROM tbl_user WHERE id=tbl_post.fk_userId_post) as username FROM tbl_post WHERE postId=?`;
   try {
     const [post, _] = await db.execute(sqlGetPostById, [id]);
-    // console.log("post from db", post[0]);
     if (post) return res.status(200).json({ currentPost: post[0] });
   } catch (err) {
     console.log(err);
@@ -81,9 +80,11 @@ export const getUserPosts = async (req, res) => {
 
 export const savePostImg = (req, res) => {
   const fileLocation = req.file.location;
+  console.log("file in savePostImg function", req.file);
   try {
     if (fileLocation) return res.status(201).json({ imgUrl: fileLocation });
   } catch (err) {
+    console.log("error upload dude", err);
     const timeout =
       err.code === "ETIMEDOUT" || err.code === "PROTOCOL_CONNECTION_LOST";
     res.status(500).json({ error: timeout ? "timeout" : "database" });
@@ -247,8 +248,8 @@ export const createComment = async (req, res) => {
         comment.insertId,
       ]);
       if (count && newComment) {
-        console.log("COUNT", count[0].commentCount);
-        console.log("NEW COMMENT", newComment);
+        // console.log("COUNT", count[0].commentCount);
+        // console.log("NEW COMMENT", newComment);
         res.status(201).json({
           count: count[0].commentCount,
           newComment: { ...newComment[0], replies: [] },
@@ -276,7 +277,7 @@ export const getComments = async (req, res) => {
             comment.commentId,
           ]);
           if (res2) {
-            console.log("replies", res2);
+            console.log("getComments - replies", res2);
             replies = res2;
             return (comment = {
               ...comment,
@@ -291,7 +292,7 @@ export const getComments = async (req, res) => {
           if (b.commentId < b.commentId) return 1;
           return 0;
         });
-        console.log("comments", comments);
+        console.log("getComments -  comments", comments);
         return res.status(200).json({ comments });
       }
     }

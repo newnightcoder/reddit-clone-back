@@ -60,7 +60,6 @@ export class Post {
     try {
       const [result, _] = await db.execute(sqlGetPost);
       if (result) {
-        console.log("this getPosts", this);
         const posts = this.transformPosts(result).sort((a, b) => {
           if (a.id < b.id) return 1;
           if (a.id > b.id) return -1;
@@ -151,7 +150,6 @@ export class Post {
         return newPost;
       }
     } catch (error) {
-      console.log(error);
       throw error;
     }
   }

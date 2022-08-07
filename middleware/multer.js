@@ -4,7 +4,7 @@ import multerS3 from "multer-s3";
 
 const MIME_TYPES = {
   "image/jpg": "jpg",
-  "image/jpeg": "jpg",
+  "image/jpeg": "jpeg",
   "image/png": "png",
   "image/gif": "gif",
   "image/webP": "webP",
@@ -24,4 +24,15 @@ const picStorage = multerS3({
   },
 });
 
-export const upload = multer({ storage: picStorage }).single("image");
+export const upload = (req, res, next) => {
+  const createUpload = multer({ storage: picStorage }).single("image");
+  createUpload(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      console.log("error multer duude!!!!!", err);
+    } else if (err) {
+      console.log("error upload", err);
+    }
+    console.log("FILE IN MULTER", req.file);
+    next();
+  });
+};

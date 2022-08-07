@@ -28,8 +28,13 @@ export class User {
       } else {
         return { error: "404" };
       }
-    } catch (error) {
-      return { error: "database" };
+    } catch (err) {
+      console.log(err);
+      const timeout =
+        err.code === "ETIMEDOUT" || err.code === "PROTOCOL_CONNECTION_LOST";
+      return {
+        error: timeout ? "timeout" : "database",
+      };
     }
   }
 

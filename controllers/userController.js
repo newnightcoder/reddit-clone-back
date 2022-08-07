@@ -20,8 +20,8 @@ export const logUser = async (req, res, next) => {
       case "404":
         return res.status(404).json({ error });
       case "password":
-        return res.status(500).json({ error });
       case "database":
+      case "timeout":
         return res.status(500).json({ error });
       default:
         return res.status(200).json({ user, isNewUser: false, accessToken });
@@ -176,7 +176,7 @@ export const getRecentUsers = async (req, res, next) => {
           return 0;
         })
         .splice(0, 5);
-      res.status(200).json({ recentUsers });
+      return res.status(200).json({ recentUsers });
     }
   } catch (err) {
     console.log(err);
@@ -212,7 +212,7 @@ export const getUserProfile = async (req, res) => {
   try {
     const [user, _] = await db.execute(sql_getUserProfile, [id || null]);
     if (user.length > 0) {
-      console.log(user);
+      console.log("getUserProfile", user);
       res.status(200).json({ user: user[0] });
     } else res.status(500).json({ error: "database" });
   } catch (err) {
@@ -336,15 +336,6 @@ export const follow = async (req, res) => {
         const res2 = await db.execute(sql_increaseFollowingCount, [myId]);
         const res3 = await db.execute(sql_increaseFollowersCount, [userId]);
         if (res1 && res2 && res3) {
-          console.log(
-            "YAY",
-            "RES FOLLOW",
-            res1,
-            "RES INCREASE FOLLOWING COUNT",
-            res2,
-            "RES INCREASE FOLLOWERS COUNT",
-            res3
-          );
           return res.status(200).json({ msg: "db updated follow" });
         }
       case false:
@@ -352,15 +343,6 @@ export const follow = async (req, res) => {
         const res5 = await db.execute(sql_decreaseFollowingCount, [myId]);
         const res6 = await db.execute(sql_decreaseFollowersCount, [userId]);
         if (res4 && res5 && res6) {
-          console.log(
-            "YAY",
-            "RES UNFOLLOW",
-            res4,
-            "RES DECREASE FOLLOWING COUNT",
-            res5,
-            "RES DECREASE FOLLOWERS COUNT",
-            res6
-          );
           res.status(200).json({ msg: "db updated unfollow" });
         }
       default:
@@ -384,10 +366,7 @@ export const getFollowers = async (req, res) => {
   try {
     const [followers, _] = await db.execute(sql_getFollowers, [id]);
     const [following, __] = await db.execute(sql_getFollowing, [id]);
-
     if (followers && following) {
-      console.log("FOLLOWERS LIST", followers);
-      console.log("FOLLOWING LIST", following);
       return res.status(200).json({ followers, following });
     }
   } catch (err) {

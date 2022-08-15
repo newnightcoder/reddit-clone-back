@@ -39,14 +39,27 @@ const metascraper = createMetascraper([
 ]);
 
 export const scrape = async (targetUrl) => {
-  console.log("URL!!!", targetUrl);
+  const checkMetadata = (data) => {
+    for (const property in data) {
+      if (
+        data[property] === null ||
+        data[property].length === 0 ||
+        data[property].includes("href")
+      ) {
+        data[property] = null;
+      } else {
+        data[property] = data[property];
+      }
+    }
+    return data;
+  };
 
   try {
     const data = await getContent(targetUrl);
     const metadata = await metascraper(data);
     if (metadata) {
-      console.log("ARTICLE METADATA:", metadata);
-      return { article: metadata };
+      const article = checkMetadata(metadata);
+      return { article };
     }
   } catch (err) {
     console.log(err);

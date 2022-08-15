@@ -100,16 +100,25 @@ export class Post {
   }
 
   async create() {
-    const sqlCreatePost = this.isPreview
+    const { userId, title, text, date, imgUrl, isPreview, preview } = this;
+    const sqlCreatePost = isPreview
       ? `INSERT INTO tbl_post (fk_userId_post, title, text, date, imgUrl, isPreview, previewTitle, previewText, previewImg, previewPub, previewUrl, previewPubLogo ) 
-        VALUES (${this.userId},"${this.title}", "${this.text}", 
-        "${this.date}","${this.imgUrl}",${this.isPreview ? 1 : 0},
-        "${this.preview.title}","${this.preview.text.substr(0, 100)}",
-        "${this.preview.image}",
-        "${this.preview.publisher !== null ? this.preview.publisher : ""}",
-        "${this.preview.url}",
-        "${this.preview.logo !== null ? this.preview.logo : ""}")`
-      : `INSERT INTO tbl_post (fk_userId_post, title, text, date, imgUrl) VALUES (${this.userId},"${this.title}", "${this.text}", "${this.date}","${this.imgUrl}")`;
+        VALUES (${userId},"${title}", "${text}", 
+        "${date}","${imgUrl}",${isPreview ? 1 : 0},
+        "${
+          preview.title === null || preview.title.length === 0
+            ? ""
+            : preview.title
+        }","${
+          preview.text === null || preview.text.length === 0
+            ? ""
+            : preview.text.substr(0, 100)
+        }",
+        "${preview.image !== null ? preview.image : ""}",
+        "${preview.publisher !== null ? preview.publisher : ""}",
+        "${preview.url}",
+        "${preview.logo !== null ? preview.logo : ""}")`
+      : `INSERT INTO tbl_post (fk_userId_post, title, text, date, imgUrl) VALUES (${userId},"${this.title}", "${this.text}", "${this.date}","${this.imgUrl}")`;
     const sqlGetPost = `SELECT * FROM tbl_post WHERE postId=?`;
 
     try {

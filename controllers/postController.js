@@ -109,6 +109,7 @@ export const createPost = async (req, res) => {
     const result = await newPost.create();
     if (result) return res.status(201).json({ newPost: result });
   } catch (err) {
+    console.log(err);
     const timeout =
       err.code === "ETIMEDOUT" || err.code === "PROTOCOL_CONNECTION_LOST";
     res.status(500).json({ error: timeout ? "timeout" : "database" });
@@ -341,17 +342,11 @@ export const createReply = async (req, res, next) => {
 
 export const sendLinkData = async (req, res) => {
   const { targetUrl } = req.body;
+
   try {
     let { article, error } = await scrape(targetUrl);
     if (error) return res.status(500).json({ error });
     if (article) {
-      console.log("SCRAPED ARTICLE:", article);
-      if (article.publisher?.includes(">")) {
-        article = { ...article, publisher: null };
-      }
-      if (article.description?.includes(">")) {
-        article = { ...article, description: null };
-      }
       res.status(200).json({ article });
     }
   } catch (err) {

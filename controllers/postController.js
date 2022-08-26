@@ -127,14 +127,11 @@ export const editPost = async (req, res) => {
   } = req.body;
   console.log(origin, id, title, text, imgUrl, isPreview, preview);
   const sqlEditPost = `UPDATE tbl_post SET title = "${title.replace(
-    /["']/g,
+    /["]/g,
     '\\"'
-  )}", text = "${text.replace(
-    /["']/g,
-    '\\"'
-  )}", imgUrl="${imgUrl}", isPreview=${isPreview ? 1 : 0}, previewTitle="${
-    isPreview ? preview.title : ""
-  }", previewText="${
+  )}", text = "${text.replace(/["]/g, '\\"')}", imgUrl="${imgUrl}", isPreview=${
+    isPreview ? 1 : 0
+  }, previewTitle="${isPreview ? preview.title : ""}", previewText="${
     isPreview && preview.text !== null ? preview.text.substr(0, 100) : ""
   }", previewImg="${isPreview ? preview.image : ""}", previewPub="${
     isPreview && preview.publisher !== null ? preview.publisher : ""

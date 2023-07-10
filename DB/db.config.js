@@ -10,20 +10,20 @@ const dbConfigLocal = {
 };
 
 // DB ON HEROKU / CLEARdb 😅
-const dbConfig = {
-  host: "eu-cdbr-west-02.cleardb.net",
-  user: "b97aba0f0938eb",
-  password: process.env.SQL_PASS_HEROKU,
-  database: "heroku_3b1889097b1e2de",
-};
+// const dbConfig = {
+//   host: "eu-cdbr-west-02.cleardb.net",
+//   user: "b97aba0f0938eb",
+//   password: process.env.SQL_PASS_HEROKU,
+//   database: "heroku_3b1889097b1e2de",
+// };
 
 // DB ON AWS 🤩👌🏾
-// const dbConfig = {
-//   host: process.env.SQL_HOST_AWS,
-//   user: "admin",
-//   password: process.env.SQL_PASS_AWS,
-//   database: "forumdb",
-// };
+const dbConfig = {
+  host: process.env.SQL_HOST_AWS,
+  user: "admin",
+  password: process.env.SQL_PASS_AWS,
+  database: "forumdb",
+};
 
 const pool = mysql.createPool(dbConfig);
 export const db = pool.promise();

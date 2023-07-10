@@ -10,7 +10,12 @@ const MIME_TYPES = {
   "image/webP": "webP",
 };
 
-const s3 = new aws.S3();
+const s3Config = {
+  accessKeyId: process.env.MY_AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.MY_AWS_SECRET_ACCESS_KEY,
+};
+
+const s3 = new aws.S3(s3Config); // config passed to S3 client for cyclic.sh deployment because AWS env variables are reserved for cyclic because the app environment sets its own credentials (cyclic has its own connexion to make to aws S3 and DB)
 
 const picStorage = multerS3({
   s3: s3,

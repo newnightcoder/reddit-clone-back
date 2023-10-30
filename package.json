@@ -8,7 +8,8 @@
   "license": "ISC",
   "private": true,
   "scripts": {
-    "start": "node app"
+    "start": "node app",
+    "heroku-postbuild": "mkdir ./.cache && mv /app/.cache/puppeteer ./.cache"
   },
   "dependencies": {
     "aws-sdk": "^2.1111.0",
